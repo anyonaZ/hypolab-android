@@ -18,6 +18,9 @@ DEFAULTS = {
     # "sandbox" = offline practice market; "live" = your BRAIN account. Every marimo app follows this switch.
     # Change it on the cockpit's Setup tab, or `python -m hypolab live` / `python -m hypolab sandbox`.
     "mode": "sandbox",
+    # 1.12.0: stocks in the offline practice market. 500 on the laptop; the Android app starts with 250 (env
+    # HYPOLAB_SANDBOX_STOCKS) because the 500-stock market peaks near 0.9 GB, too close to a 4 GB tablet's limit.
+    "sandbox_stocks": int(os.environ.get("HYPOLAB_SANDBOX_STOCKS", "500") or 500),
     "live_region": "USA",             # the region the apps use in live mode (change per session if you like)
     # Simulation discipline. BRAIN wants VOLUME (1000+ simulations is normal for a consultant who builds
     # ideas from scratch). Volume is not the problem; picking the best of many variants of ONE idea is.
@@ -173,6 +176,20 @@ def save_settings(**changes) -> dict:
 def sandbox_mode() -> bool:
     """True unless you switched to live mode. The apps use: SANDBOX = config.sandbox_mode()."""
     return settings().get("mode", "sandbox") != "live"
+
+
+def platform() -> str:
+    """1.12.0: "android" inside the tablet app (set by its launcher), otherwise "desktop"."""
+    return (os.environ.get("HYPOLAB_PLATFORM") or "desktop").strip().lower()
+
+
+def sandbox_stocks() -> int:
+    """Stocks in the practice market (50..1000)."""
+    try:
+        n = int(settings().get("sandbox_stocks", DEFAULTS["sandbox_stocks"]))
+    except (TypeError, ValueError):
+        n = DEFAULTS["sandbox_stocks"]
+    return max(50, min(1000, n))
 
 
 def live_region() -> str:

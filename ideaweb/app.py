@@ -80,7 +80,10 @@ def page(request: Request, name: str, **ctx):
                lab_card=request.query_params.get("lab", ""),
                nav={"drafts_waiting": counts.get("draft", 0) + counts.get("checked", 0),
                     "week": planner.iso_week(), "leads": n_leads, "sources": _new_sources(st)},
-               cockpit_url="http://127.0.0.1:2718", region_default=st.default_region())
+               platform=config.platform(),
+               # 1.12.0: the tablet has no marimo cockpit (its pages arrive in Android phase C)
+               cockpit_url=None if config.platform() == "android" else "http://127.0.0.1:2718",
+               region_default=st.default_region())
     return templates.TemplateResponse(request, name, ctx)
 
 
@@ -747,7 +750,45 @@ class LocalOriginOnly:
         await self.app(scope, receive, send)
 
 
-app = LocalOriginOnly(Starlette(routes=routes))
+class LaunchKey:
+    """1.12.0 (Android): when HYPOLAB_LAUNCH_SECRET is set, every request needs the cookie that the app's first URL
+    (``/?k=<secret>``) sets. Other apps on the tablet can reach 127.0.0.1 too; without the per-launch secret they
+    get 403. Not set on the laptop, where nothing changes."""
+    COOKIE = "hl_k"
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        import os
+        secret = os.environ.get("HYPOLAB_LAUNCH_SECRET", "")
+        if not secret or scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        import hmac
+        from urllib.parse import parse_qs
+        from starlette.responses import PlainTextResponse
+        q = parse_qs(scope.get("query_string", b"").decode())
+        given = (q.get("k") or [""])[0]
+        if given:
+            if hmac.compare_digest(given, secret):
+                resp = RedirectResponse("/week", status_code=303)
+                resp.set_cookie(self.COOKIE, secret, httponly=True, samesite="strict", path="/")
+                await resp(scope, receive, send)
+                return
+        else:
+            headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
+            jar = {}
+            for part in headers.get("cookie", "").split(";"):
+                k, _, v = part.strip().partition("=")
+                jar[k] = v
+            if hmac.compare_digest(jar.get(self.COOKIE, ""), secret):
+                await self.app(scope, receive, send)
+                return
+        await PlainTextResponse("Refused: open HYPOLAB from its own app.", status_code=403)(scope, receive, send)
+
+
+app = LaunchKey(LocalOriginOnly(Starlette(routes=routes)))
 
 
 def main(port: Optional[int] = None, open_browser: bool = False) -> None:

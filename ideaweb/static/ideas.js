@@ -1,13 +1,47 @@
-/* HYPOLAB Ideas: copy buttons everywhere; in the draft editor, live checks (debounced, no simulation). */
+/* HYPOLAB Ideas: copy buttons everywhere; in the draft editor, live checks (debounced, no simulation).
+   1.12.0: inside the Android app, window.HypolabAndroid adds Share and Paste buttons and does the copying. */
 (function () {
+  var A = window.HypolabAndroid || null;
+  function flash(b, word) { var t = b.textContent; b.textContent = word; setTimeout(function () { b.textContent = t; }, 1400); }
+
+  if (A) {
+    document.querySelectorAll("button.copy").forEach(function (b) {
+      var s = document.createElement("button");
+      s.type = "button"; s.className = "btn small share"; s.textContent = "Share";
+      s.setAttribute("data-copy", b.getAttribute("data-copy"));
+      s.title = "Send this text to another app (for example the Claude app)";
+      b.insertAdjacentElement("afterend", s);
+    });
+    document.querySelectorAll("textarea[data-paste]").forEach(function (ta) {
+      var p = document.createElement("button");
+      p.type = "button"; p.className = "btn small pastebtn"; p.textContent = "Paste from clipboard";
+      p.addEventListener("click", function (e) {
+        e.preventDefault();
+        var t = A.paste() || "";
+        if (!t) { flash(p, "Clipboard is empty"); return; }
+        ta.value = t; ta.dispatchEvent(new Event("input", { bubbles: true })); ta.focus();
+        flash(p, "Pasted");
+      });
+      ta.insertAdjacentElement("afterend", p);
+    });
+  }
+
   document.addEventListener("click", function (e) {
+    var sh = e.target.closest("button.share");
+    if (sh && A) {
+      e.preventDefault();
+      var node = document.querySelector(sh.getAttribute("data-copy"));
+      if (node) A.share(node.textContent, document.title);
+      return;
+    }
     var b = e.target.closest("button.copy");
     if (!b) return;
     e.preventDefault();
     var src = document.querySelector(b.getAttribute("data-copy"));
     if (!src) return;
     var text = src.textContent;
-    var done = function () { var t = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = t; }, 1400); };
+    var done = function () { flash(b, "Copied"); };
+    if (A) { A.copy(text); done(); return; }
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
     } else { fallback(text); done(); }

@@ -231,3 +231,49 @@ pre.hidden-copy { display: none; }
   .row3, .row5, .rungline { grid-template-columns: 1fr; }
   .binform { margin-left: 0; }
 }
+
+/* ------------------------------------------------------------------ 1.12.0: phones and the tablet */
+.topbar { display: none; }
+.pastebtn { margin-top: 0.35rem; align-self: flex-start; }
+.copyrow { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.4rem 0 0; }
+.android .copyblock .copy { position: static; }
+@media (max-width: 760px) {
+  body { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(4.2rem + env(safe-area-inset-bottom)); }
+  main { min-width: 0; overflow-wrap: anywhere; }
+  .topbar { display: flex; align-items: baseline; gap: 0.9rem; padding: 0.7rem 1rem 0.4rem; border-bottom: 1px solid var(--rule); }
+  .topbar .brand { font-family: var(--mono); font-weight: 500; color: var(--green); text-decoration: none; margin-right: auto; }
+  .topbar .brand span { color: var(--muted); }
+  .topbar .mode, .topbar .ver { margin: 0; }
+  /* the side rail becomes a bottom bar of four big tabs */
+  .rail { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; top: auto; height: auto; flex-direction: row;
+    flex-wrap: nowrap; gap: 0; padding: 0 0 env(safe-area-inset-bottom); border: 0; border-top: 1px solid var(--rule); }
+  .rail .brand, .rail-foot { display: none; }
+  .rail a { flex: 1 1 0; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem;
+    min-height: 3.6rem; border-radius: 0; padding: 0.3rem 0.2rem; font-size: 0.92rem; }
+  .rail a.on { box-shadow: inset 0 3px 0 var(--green); }
+  main { padding: 1.1rem 1rem 2rem; }
+  h1 { font-size: 1.75rem; }
+  .card .title { font-size: 1.3rem; }
+  /* wide tables scroll sideways instead of squeezing */
+  table.grid { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .grid td, .grid th { white-space: nowrap; }
+  .grid td.wrap, .grid th.wrap { white-space: normal; min-width: 14rem; }
+  .role { grid-template-columns: 1fr; }
+  .catpick > div { width: min(22rem, calc(100vw - 2rem)); grid-template-columns: 1fr; }
+  .copyblock .copy { position: static; margin-bottom: 0.3rem; }
+  .binform { flex-wrap: wrap; }
+  .binform input, .binform select { min-width: 0; flex: 1 1 10rem; }
+}
+/* fingers, not a mouse: every control at least 48 px tall, no hover-only cues */
+@media (pointer: coarse) {
+  .btn, .btn.small { min-height: 3rem; padding: 0.55rem 1rem; display: inline-flex; align-items: center; justify-content: center; }
+  input, select { min-height: 3rem; font-size: 1rem; }
+  textarea { font-size: 1rem; }
+  input[type=checkbox] { width: 1.4rem; height: 1.4rem; min-height: 0; }
+  label.chk { min-height: 3rem; }
+  details > summary { min-height: 3rem; display: flex; align-items: center; }
+  .tabs { overflow-x: auto; }
+  .tabs a { min-height: 3rem; display: inline-flex; align-items: center; white-space: nowrap; }
+  .grid tr:hover td { background: transparent; }
+  pre.code { font-size: 0.86rem; }
+}

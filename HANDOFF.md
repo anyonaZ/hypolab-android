@@ -1,10 +1,14 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22: **HYPOLAB 1.11.0 = 1.10.3 + Android phase A (the feasibility spike) + no scipy.** The code now
-lives in the private GitHub repo `anyonaZ/hypolab-android` (desktop code at the root, the Android app in `android/`,
-the APK built by GitHub Actions). scipy is gone from the shared code (`hypolab/_stats.py`, matched to scipy in
-`tests/test_stats_noscipy.py`); the full suite passes with scipy blocked: **331 tests**. The spike ran on Zacc's
-tablet; see "Android track - phase A (1.11.0)" below.
+State on 2026-10-22: **HYPOLAB 1.12.0 = 1.11.0 + Android phase B (the Ideas app on the tablet).** The Ideas
+web app runs inside the Android app (uvicorn on 127.0.0.1, random port, per-launch secret) in a full-screen WebView,
+with bundled fonts, a bottom bar on small screens, 48 px touch targets, and Copy / Paste / Share through a small
+Android bridge. The laptop gets the same pages (fonts now local there too; nothing else changes on the desktop). The
+code lives in the private GitHub repo `anyonaZ/hypolab-android`; GitHub Actions builds the APK. **343 tests pass**
+(`python tests/run_all.py`, scipy not needed). See "Android track" below.
+
+Before that, 1.11.0 (22 Oct): Android phase A (the feasibility spike, passed on the tablet) and no scipy
+(`hypolab/_stats.py`, matched to scipy in `tests/test_stats_noscipy.py`).
 
 Before that, 2026-10-20 (night): **HYPOLAB 1.10.3 = 1.10.2 + the idea team's paste boxes and agent pack v3.** A review
 of Zacc's agent pack v2 (prompts only) against the code found that the chats' output is only checked where it is
@@ -312,6 +316,38 @@ ended. The device had only ~0.9 GB "available" before the run (Android frees oth
 Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
+
+## Android track - phase B (1.12.0, 22 Oct)
+- `android/app/src/main/python/hl_android.py`: `start(files_dir)` sets HYPOLAB_HOME = <app files>/hypolab,
+  HYPOLAB_PLATFORM=android, HYPOLAB_SANDBOX_STOCKS=250, a fresh HYPOLAB_LAUNCH_SECRET, binds 127.0.0.1:0 and runs
+  uvicorn (h11, asyncio, no websockets, no lifespan) in a daemon thread; returns `http://127.0.0.1:<port>/?k=<secret>`.
+  It must not import hypolab at module level (config reads HYPOLAB_HOME on import).
+- `ideaweb/app.py` `LaunchKey` (outermost middleware): only when HYPOLAB_LAUNCH_SECRET is set, `/?k=` sets an
+  HttpOnly SameSite=Strict cookie `hl_k`; every other request without it gets 403 (other apps can reach 127.0.0.1).
+  `LocalOriginOnly` still refuses POSTs from other origins.
+- `hypolab/config.py`: `platform()` ("android"/"desktop") and `sandbox_stocks()` (setting `sandbox_stocks`, default
+  500 or HYPOLAB_SANDBOX_STOCKS; MockBrain builds its market with it). The marimo quant basics still builds 500 (desktop
+  only; ported in phase C).
+- Pages: `base.html` loads `/static/fonts/fonts.css` (IBM Plex Sans/Mono, Newsreader; latin 400/500/600 + Newsreader
+  italic; Fontsource v5 files, OFL texts beside them) - no Google Fonts anywhere. `<body class="android|desktop">`.
+  A `.topbar` (brand, Sandbox/Live, version) shows at <= 760 px, where the rail becomes a fixed bottom bar of four tabs;
+  tables scroll sideways; `@media (pointer: coarse)` makes controls >= 48 px. On Android the cockpit link is replaced
+  by "The Lab is on the laptop for now" (the Lab arrives in phase C).
+- Copy/Paste/Share: `ideas.js` uses `window.HypolabAndroid` when present: copy() for every Copy button, a Share
+  button after each Copy button (Android's share sheet, e.g. to the Claude app), and a "Paste from clipboard" button
+  under every `textarea[data-paste]` (drafts import, verdict, Reviewer's plan, source text).
+- `MainActivity.kt`: starts Python on a background thread, then a WebView (JS + DOM storage on; file and content
+  access off; no multiple windows). Links to anything but 127.0.0.1 open in the browser. Back = page back, then close.
+  Edge-to-edge insets (status bar, gesture bar, keyboard) are applied as padding (Android 15+ forces edge to edge).
+  `network_security_config.xml`: clear text only to 127.0.0.1. `configChanges` keeps the page on rotation.
+- Tests: `tests/test_android_phase_b.py` runs the real launcher on the laptop (secret, cookie, pages, fonts, POST
+  guard); `tests/test_platform_desktop.py` proves the desktop is unchanged (no secret, cockpit link, 500 stocks).
+- Not yet measured on the tablet: memory of WebView + server + 250-stock market together (expected well under 1 GB).
+
+### Signing (needed before data matters)
+The permanent key is never in the repo. Workflow secrets: `HYPOLAB_KEYSTORE_B64` (base64 of the .jks, alias
+`hypolab`) and `HYPOLAB_STORE_PASSWORD` (store and key password). Without them the APK is debug-signed with a key that
+changes per build machine, so it cannot update an installed app: uninstalling first loses the app's data.
 
 ## Phase 7 - collectors (1.9.0, Oct 20)
 Design v2's "Idea sources" table, built without any AI call (decision 1): the collectors read, HYPOLAB tags and ranks,

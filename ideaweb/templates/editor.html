@@ -107,7 +107,7 @@
     <summary>Paste the Critic's verdict</summary>
     <form method="post" action="/drafts/verdict" class="stack">
       <input type="hidden" name="draft_id" value="{{ row.id if row else '' }}">
-      <textarea name="verdict" rows="8" placeholder="verdict:&#10;  id: IE_...&#10;  decision: keep | rewrite | bin"></textarea>
+      <textarea name="verdict" data-paste rows="8" placeholder="verdict:&#10;  id: IE_...&#10;  decision: keep | rewrite | bin"></textarea>
       <button class="btn">Attach the verdict</button>
       {% if not row %}<p class="hint">Save the draft first: the verdict is stored with it.</p>{% endif %}
     </form>

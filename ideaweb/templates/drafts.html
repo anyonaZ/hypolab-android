@@ -30,7 +30,7 @@
   <h2>Import from Scout &amp; Writer</h2>
   <form method="post" action="/drafts/import" class="stack">
     <label>Paste one or more cards (the <code># from:</code> line and code fences are fine)
-      <textarea name="cards" rows="10" placeholder="# from: B-20261019-1&#10;- id: IE_...&#10;  title: ..."></textarea></label>
+      <textarea name="cards" data-paste rows="10" placeholder="# from: B-20261019-1&#10;- id: IE_...&#10;  title: ..."></textarea></label>
     <label>Dry run in
       <select name="region">
         {% for r in regions %}<option value="{{ r }}" {{ 'selected' if r == region_default }}>{{ r }}</option>{% endfor %}

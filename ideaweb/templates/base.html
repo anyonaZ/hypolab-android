@@ -4,12 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Ideas{% endblock %} · HYPOLAB</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<meta name="theme-color" content="#050d0a">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v={{ version }}">
 <link rel="stylesheet" href="/static/ideas.css?v={{ version }}">
 </head>
-<body>
+<body class="{{ platform }}">
+<header class="topbar">
+  <a class="brand" href="/week">HYPOLAB <span>ideas</span></a>
+  <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
+  <p class="ver">v{{ version }}</p>
+</header>
 <nav class="rail" aria-label="Sections">
   <a class="brand" href="/week">HYPOLAB <span>ideas</span></a>
   {% set here = request.url.path %}
@@ -19,7 +23,8 @@
   <a href="/drafts" class="{{ 'on' if here.startswith('/drafts') }}">Drafts {% if nav.drafts_waiting %}<small class="count">{{ nav.drafts_waiting }}</small>{% endif %}</a>
   <div class="rail-foot">
     <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
-    <a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Open the cockpit (Lab)</a>
+    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Open the cockpit (Lab)</a>
+    {% else %}<p class="hint">The Lab is on the laptop for now.</p>{% endif %}
     <p class="ver">v{{ version }}</p>
   </div>
 </nav>

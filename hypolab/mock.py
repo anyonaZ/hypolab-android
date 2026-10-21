@@ -40,7 +40,10 @@ class MockBrain:
     is_mock = True
 
     def __init__(self, data: Optional[Data] = None, seed: int = 7):
-        self.data = data or make_market(seed=seed)
+        if data is None:
+            from . import config
+            data = make_market(seed=seed, n_stocks=config.sandbox_stocks())
+        self.data = data
         self.ev = Evaluator(self.data)
         self._alphas: Dict[str, dict] = {}
         self._results: Dict[str, object] = {}

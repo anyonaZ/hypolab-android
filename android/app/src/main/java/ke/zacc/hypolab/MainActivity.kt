@@ -1,76 +1,154 @@
 package ke.zacc.hypolab
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Debug
-import android.os.SystemClock
-import android.widget.Button
-import android.widget.LinearLayout
+import android.view.View
+import android.view.WindowInsets
+import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
-import java.io.File
 
-/** Phase A spike: one button runs spike.py and shows time and memory for each step. */
+/**
+ * HYPOLAB on the tablet (1.12.0, phase B): starts the Ideas web app in Python (hl_android.py) on 127.0.0.1
+ * and shows it full screen. The page talks to Android only through the small bridge below (copy, paste, share).
+ */
 class MainActivity : Activity() {
-    private lateinit var out: TextView
+    private lateinit var root: FrameLayout
+    private var web: WebView? = null
+    private var origin: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val green = Color.rgb(0, 255, 156)
-        out = TextView(this).apply {
-            typeface = Typeface.MONOSPACE; textSize = 11f; setTextColor(green); setPadding(24, 24, 24, 24)
-            setTextIsSelectable(true)
-            text = "HYPOLAB feasibility spike (phase A)\nTap RUN SPIKE. It builds the practice market, so it takes a minute.\n"
-        }
-        val run = Button(this).apply { text = "RUN SPIKE"; minHeight = 144 }
-        val copy = Button(this).apply { text = "COPY REPORT"; minHeight = 144 }
-        val bar = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; addView(run); addView(copy) }
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.BLACK)
-            addView(bar); addView(ScrollView(this@MainActivity).apply { addView(out) })
-        }
+        window.statusBarColor = Color.rgb(5, 13, 10)
+        window.navigationBarColor = Color.rgb(5, 13, 10)
+        root = FrameLayout(this).apply { setBackgroundColor(Color.rgb(6, 16, 12)) }
+        applyInsets(root)
         setContentView(root)
-        copy.setOnClickListener {
-            (getSystemService(CLIPBOARD_SERVICE) as ClipboardManager)
-                .setPrimaryClip(ClipData.newPlainText("HYPOLAB spike", out.text))
+        showMessage("Starting HYPOLAB ...\n\nThe first start unpacks Python and takes up to a minute.")
+        if (Build.VERSION.SDK_INT >= 33) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) { goBack() }
         }
-        run.setOnClickListener { run.isEnabled = false; Thread { spike(); runOnUiThread { run.isEnabled = true } }.start() }
+        Thread {
+            try {
+                if (!Python.isStarted()) Python.start(AndroidPlatform(this))
+                val mod = Python.getInstance().getModule("hl_android")
+                val url = mod.callAttr("start", filesDir.absolutePath).toString()
+                origin = mod.callAttr("origin").toString()
+                runOnUiThread { openWeb(url) }
+            } catch (e: Throwable) {
+                runOnUiThread { showMessage("HYPOLAB could not start.\n\n$e\n\nLong-press to copy this text and send it to Claude.") }
+            }
+        }.start()
     }
 
-    private fun say(s: String) = runOnUiThread { out.append(s + "\n") }
-
-    private fun deviceLine(): String {
-        val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val mi = ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) }
-        return "device ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL} Android ${android.os.Build.VERSION.RELEASE} " +
-            "(API ${android.os.Build.VERSION.SDK_INT}) ABI ${android.os.Build.SUPPORTED_ABIS.joinToString()}\n" +
-            "RAM total ${mi.totalMem / 1048576} MB, available ${mi.availMem / 1048576} MB, " +
-            "app limit ${am.memoryClass} MB (large ${am.largeMemoryClass} MB), lowMemory=${mi.lowMemory}"
+    /** Android 15+ draws apps edge to edge: keep the page clear of the status bar, the gesture bar and the keyboard. */
+    private fun applyInsets(v: View) {
+        if (Build.VERSION.SDK_INT >= 30) {
+            v.setOnApplyWindowInsetsListener { view, insets ->
+                val b = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.ime() or WindowInsets.Type.displayCutout())
+                view.setPadding(b.left, b.top, b.right, b.bottom)
+                WindowInsets.CONSUMED
+            }
+        }
     }
 
-    private fun pssMb(): Long = Debug.getPss() / 1024
+    private fun showMessage(text: String) {
+        root.removeAllViews()
+        web = null
+        val tv = TextView(this).apply {
+            this.text = text; typeface = Typeface.MONOSPACE; textSize = 15f
+            setTextColor(Color.rgb(61, 220, 151)); setPadding(48, 64, 48, 48); setTextIsSelectable(true)
+        }
+        root.addView(ScrollView(this).apply { addView(tv) })
+    }
 
-    private fun spike() {
-        say(deviceLine())
-        val t0 = SystemClock.elapsedRealtime()
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun openWeb(url: String) {
+        root.removeAllViews()
+        val w = WebView(this)
+        w.setBackgroundColor(Color.rgb(6, 16, 12))
+        with(w.settings) {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            allowFileAccess = false
+            allowContentAccess = false
+            textZoom = 100
+            setSupportMultipleWindows(false)
+            builtInZoomControls = false
+        }
+        w.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                val u = request.url
+                if (u.scheme == "http" && u.host == "127.0.0.1") return false   // our own pages stay here
+                openOutside(u)                                                  // papers, BRAIN, feeds: the browser
+                return true
+            }
+        }
+        w.addJavascriptInterface(Bridge(), "HypolabAndroid")
+        root.addView(w, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        web = w
+        w.loadUrl(url)
+    }
+
+    private fun openOutside(u: Uri) {
         try {
-            if (!Python.isStarted()) Python.start(AndroidPlatform(this))
-            say("Python start ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s, PSS ${pssMb()} MB")
-            val home = File(filesDir, "hypolab_home_spike").apply { mkdirs() }
-            val mod = Python.getInstance().getModule("spike")
-            val logger = java.util.function.Consumer<String> { say(it) }
-            mod.callAttr("run", home.absolutePath, "rank(-ts_delta(close, 5))", logger)
-            say("done in ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s, PSS ${pssMb()} MB")
-        } catch (e: Throwable) {
-            say("FAILED: $e")
+            startActivity(Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE))
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "No app can open $u", Toast.LENGTH_LONG).show()
         }
-        say(deviceLine())
+    }
+
+    private fun goBack() {
+        val w = web
+        if (w != null && w.canGoBack()) w.goBack() else finish()
+    }
+
+    @Deprecated("Android 12 and older")
+    override fun onBackPressed() {
+        if (Build.VERSION.SDK_INT < 33) goBack() else super.onBackPressed()
+    }
+
+    /** What the page may ask Android to do. Nothing here can simulate, submit or read files. */
+    inner class Bridge {
+        private val clip get() = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+
+        @JavascriptInterface
+        fun copy(text: String) {
+            runOnUiThread { clip.setPrimaryClip(ClipData.newPlainText("HYPOLAB", text)) }
+        }
+
+        @JavascriptInterface
+        fun paste(): String {
+            val c = clip.primaryClip ?: return ""
+            if (c.itemCount == 0) return ""
+            return c.getItemAt(0).coerceToText(this@MainActivity)?.toString() ?: ""
+        }
+
+        @JavascriptInterface
+        fun share(text: String, title: String) {
+            runOnUiThread {
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"; putExtra(Intent.EXTRA_TEXT, text); putExtra(Intent.EXTRA_SUBJECT, title)
+                }
+                startActivity(Intent.createChooser(send, "Send to"))
+            }
+        }
     }
 }
