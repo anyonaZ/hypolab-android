@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Week {{ week }}{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>Week {{ week }}</h1>
+  <form method="get" action="/week" class="inline">
+    <label>Week <select name="week" onchange="this.form.submit()">
+      {% for w in weeks %}<option {{ 'selected' if w == week }}>{{ w }}</option>{% endfor %}
+    </select></label>
+  </form>
+</header>
+
+<section class="lead">
+  <p class="big">Expert by the end of {{ quarter }}: {{ weeks_left }} weeks left.</p>
+  <div class="prose">{{ sub_md | md | safe }}</div>
+</section>
+
+<section>
+  <h2>The three bars</h2>
+  <table class="grid">
+    <thead><tr><th>Bar</th><th class="r">Now</th><th class="r">Needed</th><th class="r">Still to go</th><th class="r">Per week</th><th>Note</th></tr></thead>
+    <tbody>
+    {% for g in goals %}
+      <tr><td>{{ g.label }}</td><td class="r">{{ g.now | num }}</td><td class="r">{{ g.bar | num }}</td>
+        <td class="r">{{ g.still_needed | num }}</td><td class="r">{{ g.per_week_needed | num }}</td><td class="muted">{{ g.journal_hint or '' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">Combined alpha performance punishes weak submissions: submit only what clears the gate.</p>
+  <details class="fold">
+    <summary>Update the numbers from your Genius page</summary>
+    <form method="post" action="/week/goals" class="goals">
+      {% set gm = {} %}{% for g in goals %}{% set _ = gm.update({g.key: g}) %}{% endfor %}
+      <label>Signals now <input type="number" step="1" name="signals_now" value="{{ gm.signals.now|int if gm.signals }}"></label>
+      <label>Signals bar <input type="number" step="1" name="signals_bar" value="{{ gm.signals.bar|int if gm.signals }}"></label>
+      <label>Pyramids now <input type="number" step="1" name="pyramids_now" value="{{ gm.pyramids.now|int if gm.pyramids }}"></label>
+      <label>Pyramids bar <input type="number" step="1" name="pyramids_bar" value="{{ gm.pyramids.bar|int if gm.pyramids }}"></label>
+      <label>Combined performance now <input type="number" step="0.01" name="perf_now" value="{{ gm.combined_perf.now if gm.combined_perf }}"></label>
+      <label>Combined performance bar <input type="number" step="0.01" name="perf_bar" value="{{ gm.combined_perf.bar if gm.combined_perf }}"></label>
+      <label>Lifetime alphas <input type="number" step="1" name="life_now" value="{{ sub.lifetime|int }}" title="BRAIN's count (Account tab download) or the number you typed, plus HYPOLAB's submissions since"></label>
+      <label>SuperAlpha unlock at <input type="number" step="1" name="life_bar" value="{{ lifetime.unlock|int }}"></label>
+      <button class="btn">Update the numbers</button>
+    </form>
+  </details>
+</section>
+
+<section>
+  <h2>Plan for {{ week }} <span class="tag {{ 'ok' if saved else 'muted' }}">{{ 'saved' if saved else 'proposed, not saved' }}</span></h2>
+  {% if tracker_summary %}<p class="muted">{{ tracker_summary }}</p>{% endif %}
+  <form method="post" action="/week/plan" class="plan">
+    <input type="hidden" name="week" value="{{ week }}">
+    <label>Region <select name="region">{% for r in regions %}<option {{ 'selected' if r == plan.region }}>{{ r }}</option>{% endfor %}</select></label>
+    <fieldset class="checks-row"><legend>Categories</legend>
+      {% for cid, name in categories %}
+      <label class="chk"><input type="checkbox" name="categories" value="{{ cid }}" {{ 'checked' if cid in plan.categories }}> {{ name }}</label>
+      {% endfor %}
+    </fieldset>
+    <label>Dataset to read closely <input name="dataset_focus" value="{{ plan.dataset_focus or '' }}"></label>
+    <label>Cards to approve <input type="number" min="0" max="50" name="card_target" value="{{ plan.card_target or 5 }}"></label>
+    <label>Alphas to submit this week <input type="number" min="0" max="{{ submit_cap }}" name="submit_target" value="{{ plan.submit_target or 10 }}"></label>
+    <label class="wide">Friday review note <textarea name="review_note" rows="3">{{ plan.review_note or '' }}</textarea></label>
+    <button class="btn primary">Save the plan for {{ week }}</button>
+  </form>
+  <p class="muted">So far this week: {{ prog.simulations }} simulations on {{ prog.ideas_tested }} ideas, {{ prog.submitted }} submitted{% if prog.best_sharpe is not none %}, best Sharpe {{ prog.best_sharpe }}{% endif %}.</p>
+  {% if extra.retry or extra.dead_ends or extra.lessons %}
+  <div class="note">
+    <p><strong>From the {{ extra.get('from', 'review') }}:</strong>
+    {% if extra.retry %}retry {{ extra.retry | join(', ') }}. {% endif %}
+    {% if extra.dead_ends %}Stop these families: {{ extra.dead_ends | join(', ') }}.{% endif %}</p>
+    {% if extra.lessons %}<ul>{% for l in extra.lessons %}<li>{{ l }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<section>
+  <h2>What the week has to respect</h2>
+  {% if ev.error %}<p class="muted">Not available: {{ ev.error }}</p>{% else %}
+  <ul class="respect">
+    {% for t in ev.themes %}<li><strong>Theme:</strong> {{ t.name }} - {{ t.region }} D{{ t.delay }} {{ t.universe }}, {{ '%g' % t.multiplier }}x ({{ '%g' % (t.python_multiplier or t.multiplier) }}x Python) until {{ t.end }}.</li>{% endfor %}
+    {% for w in ev.warnings %}<li class="warnline">{{ w }}</li>{% endfor %}
+    {% if ev.next_cells %}<li><strong>Closest Pyramid cells:</strong> {{ ev.next_cells | join('; ') }}</li>{% endif %}
+    {% if ev.near_misses %}<li><strong>Near misses with tries left:</strong>
+      {% for r in ev.near_misses %}<code>{{ r.idea_id }}</code> ({{ r.best_verdict }}, Sharpe {{ r.best_sharpe | num }}, {{ r.tries_left }} left){{ ', ' if not loop.last }}{% endfor %}</li>{% endif %}
+    {% if ev.retry %}<li><strong>Retry list:</strong> {{ ev.retry | join(', ') }}</li>{% endif %}
+    {% if ev.dead_ends %}<li><strong>Dead ends (stop):</strong> {{ ev.dead_ends | join(', ') }}</li>{% endif %}
+    {% if not (ev.themes or ev.warnings or ev.next_cells or ev.near_misses or ev.retry or ev.dead_ends) %}<li class="muted">Nothing special this week.</li>{% endif %}
+  </ul>
+  <p class="muted">The <a href="/leads">Leads</a> page has everything the journal suggests testing next.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Friday review</h2>
+  {% if checklist %}
+  <ol class="checklist">
+    {% for c in checklist %}
+    <li class="{{ 'done' if c.done else '' }}">{% if c.done %}<span class="tag ok">done</span>{% elif c.done is sameas false %}<span class="tag muted">to do</span>{% endif %}
+      {{ c.step }} <span class="muted">- {{ c.why }}</span></li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+  <p>Copy the digest into the Weekly Reviewer project, then paste its plan below. The plan is saved for its week; its lessons and dead ends go to your journal once.</p>
+  <div class="copyblock">
+    <button class="btn small copy" data-copy="#digest">Copy the digest</button>
+    <pre id="digest" class="code">{{ digest }}</pre>
+  </div>
+  <form method="post" action="/week/review" class="stack">
+    <label>The Reviewer's plan <textarea name="plan" rows="9" placeholder="plan:&#10;  week: 2026-W43&#10;  region: USA&#10;  categories: [pv, model]&#10;  ..."></textarea></label>
+    <button class="btn primary">Check and save this plan</button>
+  </form>
+  <h3>Text for the HYPOLAB state doc</h3>
+  <p>The daily alpha brief reads the <a href="{{ state_doc_url }}" target="_blank" rel="noopener">HYPOLAB state doc</a> at 17:55 on weekdays. After the plan is saved, copy this and replace the doc's sections with it.</p>
+  <div class="copyblock">
+    <button class="btn small copy" data-copy="#statetext">Copy the state text</button>
+    <pre id="statetext" class="code">{{ state_md }}</pre>
+  </div>
+</section>
+{% endblock %}

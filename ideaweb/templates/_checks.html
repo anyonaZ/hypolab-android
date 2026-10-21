@@ -1,0 +1,20 @@
+<p class="summary {{ 'ok' if rep.ok and (rep.idea is not none or not rep.region) else ('err' if not rep.ok else 'warn') }}">{{ rep.summary() }}</p>
+{% if table %}
+<ul class="checklist">
+{% for c in table %}
+  <li class="{{ c.level|lower }}"><span class="lvl">{{ c.level|lower }}</span> <span class="where">{{ c.where }}</span> {{ c.check }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if rep.bindings %}
+<h3>Fields in {{ rep.region }} {{ rep.universe }} D{{ rep.delay }}</h3>
+<table class="grid tight">
+  <thead><tr><th>Role</th><th>Field</th><th>Dataset</th><th class="r">Cover</th><th class="r">Alphas</th></tr></thead>
+  <tbody>{% for b in rep.bindings %}<tr><td>{{ b.role }}</td><td><code>{{ b.field }}</code></td><td>{{ b.dataset }}</td><td class="r">{{ b.coverage }}</td><td class="r">{{ b.alphas }}</td></tr>{% endfor %}</tbody>
+</table>
+<p class="hint">Read the field descriptions in the cockpit's Data tab: you are the final judge.</p>
+{% endif %}
+{% if rep.rungs %}
+<h3>Rungs as they would be simulated</h3>
+<ol class="ladder">{% for r in rep.rungs %}<li><span class="rung">{{ r.rung }}</span> <span class="muted">{{ r.is_test }}</span>{% if r.lint != 'ok' %} <span class="tag err">blocked</span>{% endif %}<pre class="code">{{ r.expression }}</pre></li>{% endfor %}</ol>
+{% endif %}

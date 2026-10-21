@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <title type="html">ArXiv Query: search_query=cat:q-fin.PM OR cat:q-fin.ST</title>
+  <id>http://arxiv.org/api/test</id>
+  <updated>2026-10-19T00:00:00-04:00</updated>
+  <opensearch:totalResults>4</opensearch:totalResults>
+  <entry>
+    <id>http://arxiv.org/abs/2610.01234v2</id>
+    <updated>2026-10-16T17:59:59Z</updated>
+    <published>2026-10-15T12:00:00Z</published>
+    <title>Analyst Attention and the Cross-Section of Stock Returns</title>
+    <summary>  We show that stocks whose analysts are distracted by simultaneous earnings
+      announcements of other covered firms revise estimates more slowly. The resulting
+      drift predicts the cross-section of stock returns for three months and survives
+      standard factor models.  </summary>
+    <author><name>Jane Doe</name></author>
+    <author><name>Ravi Kumar</name></author>
+    <author><name>Li Wei</name></author>
+    <link href="http://arxiv.org/abs/2610.01234v2" rel="alternate" type="text/html"/>
+    <link title="pdf" href="http://arxiv.org/pdf/2610.01234v2" rel="related" type="application/pdf"/>
+    <arxiv:primary_category term="q-fin.PM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-fin.PM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-fin.ST" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.04567v1</id>
+    <updated>2026-10-14T10:00:00Z</updated>
+    <published>2026-10-14T10:00:00Z</published>
+    <title>Inventory Growth, Profitability and Mispricing</title>
+    <summary>Firms with rapid inventory build-up relative to sales earn lower future returns. The
+      anomaly is stronger when institutional ownership is low and among firms with high accruals.</summary>
+    <author><name>A. Smith</name></author>
+    <author><name>B. Jones</name></author>
+    <link href="http://arxiv.org/abs/2610.04567v1" rel="alternate" type="text/html"/>
+    <arxiv:primary_category term="q-fin.ST" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-fin.ST" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.07777v1</id>
+    <published>2026-10-13T09:00:00Z</published>
+    <title>Rough Volatility and Option Pricing under Jumps</title>
+    <summary>We price European options under a rough stochastic volatility model with jumps and calibrate
+      it to the implied volatility surface. Hedging errors are reduced.</summary>
+    <author><name>C. Option</name></author>
+    <link href="http://arxiv.org/abs/2610.07777v1" rel="alternate" type="text/html"/>
+    <category term="q-fin.PR" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2610.08888v1</id>
+    <published>2026-10-12T09:00:00Z</published>
+    <title>Bitcoin Momentum on Crypto Exchanges</title>
+    <summary>We study momentum and reversal in cryptocurrency returns using high-frequency limit order book data.</summary>
+    <author><name>D. Coin</name></author>
+    <link href="http://arxiv.org/abs/2610.08888v1" rel="alternate" type="text/html"/>
+    <category term="q-fin.TR" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+</feed>

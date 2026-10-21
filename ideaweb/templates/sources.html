@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Leads from outside{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>Leads</h1>
+  <form method="get" action="/leads/sources" class="filters">
+    <label>Source <select name="src" onchange="this.form.submit()">
+      <option value="" {{ 'selected' if not src }}>all</option>
+      {% for k, t in kinds.items() %}<option value="{{ k }}" {{ 'selected' if k == src }}>{{ t }}</option>{% endfor %}
+    </select></label>
+    <label>Show <select name="show" onchange="this.form.submit()">
+      {% for v, t in [('new','new'),('all','all'),('skipped','skipped'),('drafted','drafted')] %}<option value="{{ v }}" {{ 'selected' if v == show }}>{{ t }}</option>{% endfor %}
+    </select></label>
+    <label>Search <input name="q" value="{{ q }}" placeholder="accrual, analyst, Sloan ..."></label>
+    <button class="btn">Filter</button>
+  </form>
+</header>
+{% include "_leads_tabs.html" %}
+<p class="lead-in">Ideas from outside your journal: published predictors (Open Source Asset Pricing), new arXiv papers,
+news themes that hit many firms at once, and under-used datasets in your field lists. Ranked for this week's plan
+({{ plan.region }}, {{ plan.categories | join(', ') }}). <strong>Most sources should produce no card</strong>: copy one for
+Scout &amp; Writer (it finds the mechanism or says "no card"), or make a draft and write the mechanism yourself.
+Nothing here simulates.</p>
+{% if error %}<div class="flash err"><p>The list could not be built: {{ error }}</p></div>{% endif %}
+
+<details class="fold collectors" {{ 'open' if not counts }}>
+  <summary>Collect{% for key, label in [('osap','OSAP'),('arxiv','arXiv'),('news','news'),('datasets','datasets')] %}{% set r = runs.get(key) %} <span class="muted">· {{ label }} {% if r %}{{ r.when }}{% if r.error %} <span class="errline">(failed)</span>{% endif %}{% else %}never{% endif %}</span>{% endfor %}</summary>
+  <div class="collect-grid">
+    {% set c_items = [('osap', 'Published predictors', 'once, then browse'), ('arxiv', 'arXiv q-fin papers', 'twice a week'), ('news', 'News themes', 'daily'), ('datasets', 'Under-used datasets', 'after each field-list download')] %}
+    {% for key, label, cadence in c_items %}
+    {% set r = runs.get(key) %}
+    {% set ck = 'dataset' if key == 'datasets' else key %}
+    <div class="collect-box">
+      <p class="cb-title">{{ label }} <span class="muted">({{ cadence }})</span></p>
+      <p class="muted cb-meta">{% if counts.get(ck) %}{{ counts[ck].get('new', 0) }} new, {{ counts[ck].get('drafted', 0) }} drafted, {{ counts[ck].get('skipped', 0) }} skipped{% else %}nothing yet{% endif %}
+        {% if r %}<br>last run {{ r.when }}{% if r.error %} - <span class="errline">failed: {{ r.error[:120] }}</span>{% else %}: {{ r.found }} read, {{ r.added }} new{% endif %}{% endif %}</p>
+      <div class="card-actions">
+      <form method="post" action="/leads/sources/fetch">
+        <input type="hidden" name="collector" value="{{ key }}"><button class="btn small primary">{{ 'Load the bundled list' if key == 'osap' else 'Fetch now' }}</button>
+      </form>
+      {% if key == 'osap' %}<form method="post" action="/leads/sources/fetch"><input type="hidden" name="collector" value="osap_download"><button class="btn small">Download the latest</button></form>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="muted">News feeds (settings.json <code>collector_feeds</code>): {% for f in feeds %}<code>{{ f }}</code>{{ ', ' if not loop.last }}{% endfor %}. A site that refuses: save the page in your browser, then <code>python -m hypolab collect news --file page.xml</code>.
+  News themes leave the new list after two weeks.</p>
+  {% if muted %}<p class="muted">Muted news themes (not collected):</p>
+  <div class="card-actions">{% for m in muted %}<form method="post" action="/leads/sources/unmute"><input type="hidden" name="theme" value="{{ m.key }}"><button class="btn small" title="Collect this theme again">Unmute {{ m.label }}</button></form>{% endfor %}</div>{% endif %}
+  <h3>Add a source by hand</h3>
+  <p class="muted">An SSRN abstract, a BRAIN forum post, a paper a card cites.</p>
+  <form method="post" action="/leads/sources/add" class="stack">
+    <label>Title <input name="title" required></label>
+    <div class="row3">
+      <label>Authors <input name="authors" placeholder="e.g. Novy-Marx"></label>
+      <label>Year <input name="year" type="number" min="1900" max="2100"></label>
+      <label>Link <input name="url" placeholder="https://..."></label>
+    </div>
+    <label>What it says <span class="hint">a few lines in your words or the abstract; only the first 600 characters are kept</span><textarea name="text" rows="4"></textarea></label>
+    <button class="btn">Add to the inbox</button>
+  </form>
+</details>
+
+{% if not rows %}
+<p class="empty">{% if show == 'new' %}Nothing new here. Open Collect above and press a button{% if q %}, or clear the search{% endif %}.{% else %}No {{ show }} sources{% if src %} of this kind{% endif %}.{% endif %}</p>
+{% else %}
+<p class="muted">{{ rows|length }} of {{ total }} shown{% if total > rows|length %} - <a href="/leads/sources?src={{ src }}&show={{ show }}&q={{ q|urlencode }}&n={{ n + 40 }}">show more</a>{% endif %}.</p>
+<ol class="leads">
+{% for r in rows %}
+<li class="leadrow source {{ r.kind }}" id="s-{{ loop.index }}">
+  <div class="leadrow-top">
+    <span class="tag {{ 'ok' if r.kind in ('osap','manual') else 'muted' }}">{{ r.what }}</span>
+    {% if r.url %}<a href="{{ r.url }}" target="_blank" rel="noopener noreferrer" class="src-title">{{ r.title }}</a>{% else %}<span class="src-title">{{ r.title }}</span>{% endif %}
+    {% if r.state != 'new' %}<span class="tag muted">{{ r.state }}{% if r.draft_id %}: <a href="/drafts/{{ r.draft_id }}">{{ r.draft_id }}</a>{% endif %}</span>{% endif %}
+  </div>
+  <p class="meta"><code>{{ r.tag }}</code>{% if r.kind == 'dataset' and r.extra.delays and r.extra.delays|length > 1 %} · also at {% for d in r.extra.delays if d != r.extra.delay %}D{{ d }}{% endfor %}{% endif %}{% if r.authors %} · {{ r.authors }}{% endif %}{% if r.year %} ({{ r.year }}){% endif %} · {{ r.evidence }}</p>
+  <p class="meta">{% if r.categories %}Categories: {{ r.categories | join(', ') }}{% endif %}{% if r.concepts %} · mentions {% for c in r.concepts %}<code>{{ c }}</code>{{ ', ' if not loop.last }}{% endfor %}{% endif %}{% if r.plan_note %} · <span class="okline">{{ r.plan_note }}</span>{% endif %}</p>
+  {% if r.covered_by %}<p class="warnline">Same paper as {{ r.covered_by | join(', ') }}: only worth a card if the mechanism or the data genuinely differs.</p>{% endif %}
+  {% if r.note %}<p class="muted">Your note: {{ r.note }}</p>{% endif %}
+  {% if r.summary %}<details class="more"><summary>{{ 'What it measures' if r.kind == 'osap' else ('Abstract (shortened)' if r.kind == 'arxiv' else ('Headlines' if r.kind == 'news' else 'Description')) }}</summary>
+    <p>{{ r.summary }}</p>
+    {% if r.kind == 'news' and r.extra.headlines %}<ul class="heads">{% for h in r.extra.headlines[:12] %}<li>{% if h.link %}<a href="{{ h.link }}" target="_blank" rel="noopener noreferrer">{{ h.title }}</a>{% else %}{{ h.title }}{% endif %} <span class="muted">{{ h.date }}</span></li>{% endfor %}</ul>{% endif %}
+  </details>{% endif %}
+  <div class="card-actions">
+    <button class="btn primary small copy" data-copy="#w-{{ loop.index }}">Copy for Scout &amp; Writer</button>
+    {% if r.kind == 'dataset' %}<a class="btn small" href="/leads/sources/{{ r.id | urlencode }}/writer" target="_blank" rel="noopener">With the field list</a>{% endif %}
+    {% if r.state != 'drafted' %}
+    <form method="post" action="/leads/sources/act"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="action" value="draft"><button class="btn small">Make a draft</button></form>
+    {% endif %}
+    {% if r.kind == 'news' and r.state == 'new' %}
+    <form method="post" action="/leads/sources/act"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="action" value="mute"><button class="btn small" title="Skip it and leave this theme out from now on">Mute this theme</button></form>
+    {% endif %}
+    {% if r.state == 'new' %}
+    <form method="post" action="/leads/sources/act" class="binform"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="action" value="skip">
+      <input name="note" placeholder="why skip (optional)" aria-label="Why skip"><button class="btn small">Skip</button></form>
+    {% else %}
+    <form method="post" action="/leads/sources/act"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="action" value="reopen"><button class="btn small">Show it again</button></form>
+    {% endif %}
+  </div>
+  <pre id="w-{{ loop.index }}" class="code hidden-copy">{{ r.writer }}</pre>
+</li>
+{% endfor %}
+</ol>
+{% endif %}
+<p class="muted">Cards that come back from Scout &amp; Writer carry <code># from: S-...</code>; importing one on Drafts marks its source as drafted, and Source quality (Leads › From your journal) measures outside sources separately.
+Open Source Asset Pricing: Chen &amp; Zimmermann (2022), Critical Finance Review; signal list GPL-2.0.</p>
+{% endblock %}

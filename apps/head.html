@@ -1,0 +1,54 @@
+<!-- HYPOLAB: fonts (system fonts offline) + reconnect after a lost session. 1.7.0: no digital rain -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<meta name="theme-color" content="#010604">
+<script>
+/* Self-healing after a lost session (HYPOLAB 1.4.2). When the laptop slept or the server restarted, marimo's app
+   session is gone and the tab shows "kernel not found" (or "Failed to send function request"). Show a short
+   notice and reload into a fresh session; the Lab's "Pick up where you left off" restores the work.
+   Guarded: at most one reload per 20 s, and after 3 failed tries in 3 minutes it stops and asks. */
+(function () {
+  if (window.__hypolabHeal) return;
+  window.__hypolabHeal = true;
+  var KEY = "hypolab-heal";
+  function tries() {
+    try { return JSON.parse(sessionStorage.getItem(KEY) || "[]").filter(function (t) { return Date.now() - t < 180000; }); }
+    catch (e) { return []; }
+  }
+  function lost() {
+    /* 1.4.3: a cheap textContent test first; innerText (which needs a fresh layout, and skips hidden tabs) only
+       to confirm a hit */
+    var rx = /kernel not found|Failed to send function request/i;
+    if (!document.body || !rx.test(document.body.textContent || "")) return false;
+    return rx.test(document.body.innerText || "");
+  }
+  function notice(msg) {
+    var d = document.getElementById("hypolab-heal");
+    if (!d) {
+      d = document.createElement("div"); d.id = "hypolab-heal";
+      d.style.cssText = "position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;" +
+        "background:rgba(1,6,4,.93);color:#00ff9c;font:600 18px 'JetBrains Mono',monospace;text-align:center;" +
+        "padding:24px;line-height:1.7";
+      document.body.appendChild(d);
+    }
+    d.innerHTML = "<div>" + msg + "</div>";
+  }
+  setInterval(function () {
+    if (!lost()) return;
+    var t = tries();
+    if (t.length >= 3) {
+      notice("&gt; connection to HYPOLAB lost_<br><span style='color:#d2f5e1;font-weight:400;font-size:15px'>" +
+             "The app is not running any more. In the terminal: Ctrl+C, then <b>python -m hypolab cockpit</b>.<br>" +
+             "Your simulations are safe in the journal: the Lab's <b>Restore results</b> brings them back.</span>");
+      return;
+    }
+    if (t.length && Date.now() - t[t.length - 1] < 20000) return;
+    t.push(Date.now());
+    try { sessionStorage.setItem(KEY, JSON.stringify(t)); } catch (e) {}
+    notice("&gt; session lost while you were away_<br><span style='color:#d2f5e1;font-weight:400;font-size:15px'>" +
+           "reconnecting to a fresh one ... your work is in the journal</span>");
+    setTimeout(function () { location.reload(); }, 1500);
+  }, 3000);
+})();
+</script>

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Drafts{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>Drafts</h1>
+  <a class="btn primary" href="/drafts/new">New card</a>
+</header>
+<p class="muted">Waiting {{ (counts.get('draft', 0) + counts.get('checked', 0)) }} (checked {{ counts.get('checked', 0) }}), approved {{ counts.get('approved', 0) }}, binned {{ counts.get('binned', 0) }}</p>
+<nav class="tabs" aria-label="Filter">
+  {% for v, t in [('waiting','Waiting'),('approved','Approved'),('binned','Binned'),('all','All')] %}
+  <a href="/drafts?show={{ v }}" class="{{ 'on' if v == show }}">{{ t }}</a>
+  {% endfor %}
+</nav>
+{% if rows %}
+<table class="grid drafts">
+  <thead><tr><th>Card</th><th>Title</th><th>State</th><th>Critic</th><th>From</th><th>Updated</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr><td><a href="/drafts/{{ r.id }}"><code>{{ r.id }}</code></a></td><td><a href="/drafts/{{ r.id }}">{{ r.title }}</a></td>
+    <td><span class="tag {{ 'ok' if r.state in ('checked','approved') else ('muted' if r.state == 'binned' else 'warn') }}">{{ r.state }}</span>{% if r.reason and r.state == 'binned' %} <span class="muted">{{ r.reason }}</span>{% endif %}</td>
+    <td>{{ r.critic or '' }}</td><td class="muted">{{ r.source }}</td><td class="muted">{{ r.updated }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Nothing here. Start a <a href="/drafts/new">new card</a>, copy one from <a href="/cards">Cards</a>, or import the Writer's below.</p>
+{% endif %}
+
+<section>
+  <h2>Import from Scout &amp; Writer</h2>
+  <form method="post" action="/drafts/import" class="stack">
+    <label>Paste one or more cards (the <code># from:</code> line and code fences are fine)
+      <textarea name="cards" rows="10" placeholder="# from: B-20261019-1&#10;- id: IE_...&#10;  title: ..."></textarea></label>
+    <label>Dry run in
+      <select name="region">
+        {% for r in regions %}<option value="{{ r }}" {{ 'selected' if r == region_default }}>{{ r }}</option>{% endfor %}
+      </select>
+      <span class="muted">this week's plan: {{ plan.region }} {{ plan.universe }} D{{ plan.delay or 1 }}{% if region_default != plan.region %} - the dry run region differs from the plan{% endif %}</span></label>
+    <label><input type="checkbox" name="rewrite" value="1"> This is a rewrite: replace the waiting draft with the same id
+      (keeps its source, clears the Critic's old verdict)</label>
+    <button class="btn primary">Import and check</button>
+  </form>
+</section>
+
+<section>
+  <h2>Knowledge pack</h2>
+  <p>The Writer, Critic and Reviewer read these files. Rebuild after approving cards or downloading your account, then re-upload the changed ones.</p>
+  <form method="post" action="/pack"><button class="btn">Rebuild the knowledge pack</button></form>
+</section>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Leads{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>Leads</h1>
+  <form method="get" action="/leads" class="inline">
+    <label>Show <select name="show" onchange="this.form.submit()">
+      <option value="new" {{ 'selected' if show == 'new' }}>new</option>
+      <option value="all" {{ 'selected' if show == 'all' }}>all (also skipped and drafted)</option>
+    </select></label>
+  </form>
+</header>
+{% include "_leads_tabs.html" %}
+<p class="lead-in">What your journal suggests testing next: near misses with tries left, near misses that used their
+budget and need a <strong>sibling</strong> card, scanned fields that beat the <strong>noise bar</strong> but have no card,
+<strong>inverted</strong> results, and cards that worked in one region but were never tried in another. Nothing here
+simulates or submits.{% if sandbox %} <em>Sandbox: these come from your journal file, not the practice market.</em>{% endif %}</p>
+{% if error %}<div class="flash err"><p>The list could not be built: {{ error }}</p></div>{% endif %}
+
+{% if not rows %}
+<p class="empty">Nothing waiting. Leads appear as you test cards in the Lab and scan datasets (the Dataset scan app).</p>
+{% else %}
+<ol class="leads">
+{% for r in rows %}
+<li class="leadrow {{ r.kind }}">
+  <div class="leadrow-top">
+    <span class="tag {{ 'ok' if r.kind in ('near_miss','sibling') else 'muted' }}">{{ r.what }}</span>
+    <code>{{ r.subject }}</code> <span class="muted">{{ r.region }}</span>
+    {% if r.state != 'new' %}<span class="tag muted">{{ r.state }}{% if r.draft_id %}: {{ r.draft_id }}{% endif %}</span>{% endif %}
+  </div>
+  <p>{{ r.detail }}</p>
+  <p class="next"><strong>Next:</strong> {{ r.action }}</p>
+  <div class="card-actions">
+    {% if r.kind in ('sibling', 'scan') %}
+    <form method="post" action="/leads/act"><input type="hidden" name="key" value="{{ r.key }}"><input type="hidden" name="action" value="draft"><button class="btn primary small">Make a draft</button></form>
+    {% else %}
+    <form method="post" action="/leads/act"><input type="hidden" name="key" value="{{ r.key }}"><input type="hidden" name="action" value="lab"><button class="btn primary small">Send to the Lab ({{ r.region }})</button></form>
+    {% endif %}
+    {% if r.state == 'new' %}
+    <form method="post" action="/leads/act" class="binform"><input type="hidden" name="key" value="{{ r.key }}"><input type="hidden" name="action" value="skip">
+      <input name="note" placeholder="why skip (optional)" aria-label="Why skip"><button class="btn small">Skip</button></form>
+    {% else %}
+    <form method="post" action="/leads/act"><input type="hidden" name="key" value="{{ r.key }}"><input type="hidden" name="action" value="reopen"><button class="btn small">Show it again</button></form>
+    {% endif %}
+  </div>
+</li>
+{% endfor %}
+</ol>
+{% endif %}
+
+<details class="fold">
+  <summary>Source quality: which cards reach NEAR or PASS within the trial budget</summary>
+  <p>The honest test of every source of ideas, the daily brief included (its cards carry <code># from: daily brief</code>). If AI-written cards do no better than the built-in ones after a month of live results, use the AI for reading papers, not for writing cards.</p>
+  {% if quality %}
+  <table class="grid"><thead><tr><th>Source</th><th class="r">Ideas tried</th><th class="r">NEAR or PASS</th><th class="r">Rate</th><th class="r">PASS</th><th class="r">Submitted</th><th class="r">Tries</th></tr></thead><tbody>
+  {% for q in quality %}<tr><td>{{ q.source }}</td><td class="r">{{ q.ideas_tried }}</td><td class="r">{{ q.near_or_pass }}</td><td class="r">{{ q.rate | pct }}</td><td class="r">{{ q['pass'] }}</td><td class="r">{{ q.submitted }}</td><td class="r">{{ q.tries }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="empty">No live results yet.</p>{% endif %}
+</details>
+<details class="fold">
+  <summary>Checks that fail most (by region and data category)</summary>
+  {% if failures %}
+  <table class="grid"><thead><tr><th>Region</th><th>Category</th><th>Check</th><th class="r">Failed</th><th class="r">Of</th><th class="r">Share</th></tr></thead><tbody>
+  {% for f in failures %}<tr><td>{{ f.region }}</td><td>{{ f.category }}</td><td><code>{{ f.check }}</code></td><td class="r">{{ f.failed }}</td><td class="r">{{ f.of }}</td><td class="r">{{ f.share | pct }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="empty">Nothing repeated yet.</p>{% endif %}
+</details>
+<details class="fold">
+  <summary>Dead-end families (5+ tries, nothing WEAK or better)</summary>
+  {% if dead %}
+  <table class="grid"><thead><tr><th>Family</th><th>Regions</th><th class="r">Tries</th><th class="r">Best Sharpe</th></tr></thead><tbody>
+  {% for d in dead %}<tr><td>{{ d.family }}</td><td>{{ d.regions }}</td><td class="r">{{ d.tries }}</td><td class="r">{{ d.best_sharpe | num }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="empty">None yet.</p>{% endif %}
+</details>
+<details class="fold">
+  <summary>The learning digest (what the Friday DIGEST carries)</summary>
+  <pre class="code">{{ digest_json }}</pre>
+</details>
+<details class="fold">
+  <summary>Your decisions ({{ decisions|length }})</summary>
+  {% if decisions %}
+  <table class="grid"><thead><tr><th>Lead</th><th>State</th><th>Draft</th><th>Note</th><th>When</th></tr></thead><tbody>
+  {% for d in decisions %}<tr><td><code>{{ d.subject }}</code></td><td>{{ d.state }}</td><td>{{ d.draft_id }}</td><td>{{ d.note }}</td><td class="muted">{{ d.updated }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="empty">None yet.</p>{% endif %}
+</details>
+{% endblock %}

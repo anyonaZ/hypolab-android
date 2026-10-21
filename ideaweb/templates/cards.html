@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Cards{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>Cards</h1>
+  <form method="get" action="/cards" class="filters">
+    <label>Region <select name="region">{% for r in regions %}<option {{ 'selected' if r == region }}>{{ r }}</option>{% endfor %}</select></label>
+    <label>Show <select name="source">
+      {% for v, t in [('all','all cards'),('library','built-in'),('mine','mine')] %}<option value="{{ v }}" {{ 'selected' if v == source }}>{{ t }}</option>{% endfor %}
+    </select></label>
+    <label>How many <input type="number" name="n" min="5" max="100" step="5" value="{{ n }}"></label>
+    <details class="catpick"><summary>Pyramid categories ({{ cats|length or 'all' }})</summary>
+      <div>{% for cid, name in categories %}<label class="chk"><input type="checkbox" name="cats" value="{{ cid }}" {{ 'checked' if cid in cats }}> {{ name }}</label>{% endfor %}</div>
+    </details>
+    <button class="btn">Rank</button>
+  </form>
+</header>
+{% for w in warnings %}<div class="flash warn"><p>{{ w }}</p></div>{% endfor %}
+{% if not has_fields and not sandbox %}
+<div class="flash warn"><p>No field list for {{ region }} yet, so cards use standard field names only. Download it in the cockpit (Data tab).</p></div>
+{% endif %}
+<p class="muted">Ranked by evidence, data fit, coverage, crowding, the Pyramids you still need and your journal; one card per family. Read the story before you test anything.</p>
+
+{% if not cards %}<p class="empty">No card binds here with these filters. Widen the categories, or write one in <a href="/drafts/new">Drafts</a>.</p>{% endif %}
+<ol class="cards">
+{% for c in cards %}
+<li class="card" id="{{ c.id }}">
+  <div class="card-top">
+    <h2 class="title">{{ c.title }}</h2>
+    <p class="meta"><code>{{ c.id }}</code> {{ c.pyramid or 'auto' }}, {{ c.horizon }} horizon, evidence {{ c.strength }} ({{ c.strength_txt }}){% if c.source == 'mine' %} <span class="tag ok">mine</span>{% endif %}</p>
+  </div>
+  <p class="story">{{ c.story }}</p>
+  <div class="card-actions">
+    <form method="post" action="/cards/{{ c.id }}/lab"><input type="hidden" name="region" value="{{ region }}"><button class="btn primary small">Send to the Lab</button></form>
+    <form method="post" action="/cards/{{ c.id }}/draft"><button class="btn small">Copy into a draft</button></form>
+    <form method="post" action="/cards/{{ c.id }}/bin" class="binform">
+      <select name="reason" aria-label="Why bin it">{% for r in bin_reasons %}<option>{{ r }}</option>{% endfor %}</select>
+      <button class="btn small danger">Bin</button>
+    </form>
+  </div>
+  <details class="more">
+    <summary>Mechanism, data and ladder</summary>
+    <p><strong>Why it can persist.</strong> {{ c.why }}</p>
+    <p><strong>Expected sign:</strong> {{ c.sign }}</p>
+    {% if c.fields %}<p><strong>Data in {{ region }}:</strong> {% for role, f, ds in c.fields %}<code>{{ role }} = {{ f }}</code> ({{ ds }}){{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+    <ol class="ladder">
+      {% for name, expr, test, ok in c.steps %}
+      <li><span class="rung">{{ name }}</span> {% if test %}<span class="muted">{{ test }}</span>{% endif %}{% if not ok %} <span class="tag err">blocked</span>{% endif %}<pre class="code">{{ expr }}</pre></li>
+      {% endfor %}
+    </ol>
+    {% if c.crowding.notes %}<p class="warnline">{{ c.crowding.notes | join('; ') }}</p>{% endif %}
+    {% if c.notes %}<p class="muted">Ranking: {{ c.notes | join('; ') }} (score {{ c.score }})</p>{% endif %}
+    {% if c.watch_out %}<ul class="muted">{% for w in c.watch_out %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
+    {% if c.references %}<p class="refs">Read: {{ c.references | join('; ') }}</p>{% endif %}
+  </details>
+</li>
+{% endfor %}
+</ol>
+
+<details class="fold">
+  <summary>The bin ({{ binned|length }})</summary>
+  {% if binned %}
+  <table class="grid"><thead><tr><th>Card</th><th>Reason</th><th></th></tr></thead><tbody>
+  {% for b in binned %}<tr><td><code>{{ b.hypothesis_id }}</code></td><td>{{ b.reason }}</td>
+    <td class="r"><form method="post" action="/cards/{{ b.hypothesis_id }}/restore"><button class="btn small">Restore</button></form></td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="empty">Empty. Bin a card when it turns out to be noise.</p>{% endif %}
+</details>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ row.id if row else 'New card' }}{% endblock %}
+{% block main %}
+<header class="page-head">
+  <h1>{{ (row.id if row else 'New card') }}</h1>
+  <p class="muted">{% if row %}<span class="tag {{ 'ok' if row.state in ('checked','approved') else ('muted' if row.state == 'binned' else 'warn') }}">{{ row.state }}</span>{% else %}not saved yet{% endif %}{% if source %}, from {{ source }}{% endif %}</p>
+</header>
+{% if readonly %}<div class="flash warn"><p>Approved cards are read-only. To change it, copy it into a new draft from Cards; to stop using it, bin it there.</p></div>{% endif %}
+{% if row and row.state == 'binned' %}
+<div class="flash warn"><p>Binned: {{ row.reason }}.</p>
+  <form method="post" action="/drafts/{{ row.id }}/restore"><button class="btn small">Restore as a draft</button></form></div>
+{% endif %}
+
+<div class="editor">
+<form id="card" method="post" action="/drafts/save" class="cardform" autocomplete="off">
+  <input type="hidden" name="base" value="{{ base }}">
+  <input type="hidden" name="old_id" value="{{ row.id if row else '' }}">
+  <input type="hidden" name="source" value="{{ source }}">
+  <input type="hidden" name="n_roles" value="{{ d.roles|length }}">
+  <input type="hidden" name="n_rungs" value="{{ d.rungs|length }}">
+  <fieldset {{ 'disabled' if readonly }}>
+  <div class="row3">
+    <label>Id <input name="id" value="{{ d.id }}" placeholder="IE_MY_IDEA" spellcheck="false" class="mono"></label>
+    <label>Family <input name="family" value="{{ d.family }}" placeholder="e.g. tax_avoidance" spellcheck="false" class="mono"></label>
+    <label>Pyramid category <select name="category">{% for v, t in cats %}<option value="{{ v }}" {{ 'selected' if v == d.category }}>{{ t }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="row3">
+    <label>Horizon <select name="horizon">{% for h in horizons %}<option {{ 'selected' if h == d.horizon }}>{{ h }}</option>{% endfor %}</select></label>
+    <label>Evidence <select name="strength">{% for k, t in strengths.items() %}<option value="{{ k }}" {{ 'selected' if k == d.strength }}>{{ k }} - {{ t }}</option>{% endfor %}</select></label>
+    <label>Expected sign <input name="sign" value="{{ d.sign }}" placeholder="+1"></label>
+  </div>
+  <label>Title <input name="title" value="{{ d.title }}" placeholder="The idea in plain words" class="titlefield"></label>
+  <label>The story <span class="hint">who makes the mistake, and why prices adjust slowly</span>
+    <textarea name="story" rows="5" class="prosefield">{{ d.story }}</textarea></label>
+  <label>Why it persists <span class="hint">who is on the other side, and what stops them arbitraging it</span>
+    <textarea name="why_persists" rows="3" class="prosefield">{{ d.why_persists }}</textarea></label>
+
+  <h2>Data roles</h2>
+  <p class="hint">Concepts, never field ids: HYPOLAB binds them to real fields per region. Leave empty when the card uses only price and volume (close, returns, volume, adv20, cap ...).</p>
+  <datalist id="concepts">{% for c in concepts %}<option value="{{ c }}">{{ concept_notes[c] }}</option>{% endfor %}</datalist>
+  <div class="roles">
+  {% for r in d.roles %}
+    <div class="role">
+      <input name="role_name_{{ loop.index0 }}" value="{{ r.name }}" placeholder="role, e.g. tax" class="mono" aria-label="Role name {{ loop.index }}">
+      <input name="role_concept_{{ loop.index0 }}" value="{{ r.concept }}" list="concepts" placeholder="concept" class="mono" aria-label="Concept {{ loop.index }}">
+      <label class="chk"><input type="checkbox" name="role_optional_{{ loop.index0 }}" value="1" {{ 'checked' if r.optional }}> optional</label>
+      <input name="role_note_{{ loop.index0 }}" value="{{ r.note }}" placeholder="what the field should be" aria-label="Note {{ loop.index }}">
+    </div>
+  {% endfor %}
+  </div>
+
+  <h2>Ladder</h2>
+  <p class="hint">Rung 1 is the plainest test of the mechanism; each later rung changes one thing. Write data as <code>{role}</code>; <code>{dir:role}</code> becomes +1 or -1 from the field's description.</p>
+  {% for s in d.rungs %}
+  <div class="rungbox">
+    <div class="rungline">
+      <span class="rungno">Rung {{ loop.index }}</span>
+      <input name="rung_name_{{ loop.index0 }}" value="{{ s.name }}" placeholder="{{ 'core' if loop.first else 'one change, e.g. smoothed' }}" class="mono" aria-label="Rung {{ loop.index }} name">
+      <input name="rung_teaches_{{ loop.index0 }}" value="{{ s.teaches }}" placeholder="what this rung tests that the previous one did not" aria-label="Rung {{ loop.index }} teaches">
+    </div>
+    <textarea name="rung_expr_{{ loop.index0 }}" rows="2" class="mono expr" spellcheck="false" aria-label="Rung {{ loop.index }} expression" placeholder="{{ 'group_rank(ts_backfill({tax}, 63) / cap, subindustry)' if loop.first else 'optional: rung 1 with one change' }}">{{ s.expr }}</textarea>
+  </div>
+  {% endfor %}
+
+  <h2>Settings</h2>
+  <div class="row5">
+    <label>Neutralization <select name="neutralization">{% for n in neutralizations %}<option {{ 'selected' if n == d.neutralization }}>{{ n }}</option>{% endfor %}</select></label>
+    <label>Decay <input type="number" name="decay" min="0" max="512" value="{{ d.decay }}"></label>
+    <label>Truncation <input type="number" name="truncation" min="0.01" max="1" step="0.01" value="{{ d.truncation }}"></label>
+    <label>Turnover from <input type="number" name="turnover_low" min="0" max="1.5" step="0.01" value="{{ d.turnover_low }}"></label>
+    <label>to <input type="number" name="turnover_high" min="0" max="1.5" step="0.01" value="{{ d.turnover_high }}"></label>
+  </div>
+  <label>References <span class="hint">one per line</span><textarea name="references" rows="2">{{ d.references }}</textarea></label>
+  <label>Watch out <span class="hint">one trap per line, optional</span><textarea name="watch_out" rows="2">{{ d.watch_out }}</textarea></label>
+  </fieldset>
+  <input type="hidden" name="action" value="save">
+  <input type="hidden" name="reason" value="">
+</form>
+
+<aside class="side" aria-live="polite">
+  <div class="sidebox">
+    <label class="regionpick">Check in region <select name="region" form="card">{% for r in regions %}<option {{ 'selected' if r == region }}>{{ r }}</option>{% endfor %}</select></label>
+    <div id="checks">{{ checks.html | safe }}</div>
+    {% if not readonly %}
+    <div class="actions">
+      <button class="btn" form="card" data-action="save">Save draft</button>
+      <button class="btn primary" form="card" data-action="approve" id="approve" {{ 'disabled' if not checks.ok }}>Approve</button>
+    </div>
+    <div class="actions">
+      <select id="binreason" aria-label="Why bin it">{% for r in bin_reasons %}<option>{{ r }}</option>{% endfor %}</select>
+      <button class="btn danger" form="card" data-action="bin">Bin</button>
+    </div>
+    {% endif %}
+    {% if verdict_md %}<div class="verdict">{{ verdict_md | md | safe }}</div>{% endif %}
+  </div>
+</aside>
+</div>
+
+<section class="handoffs">
+  <h2>Hand-offs</h2>
+  <details class="fold" open>
+    <summary>For the Critic: the card and HYPOLAB's checks</summary>
+    <div class="copyblock"><button class="btn small copy" data-copy="#critic">Copy for the Critic</button>
+      <pre id="critic" class="code">{{ checks.critic }}</pre></div>
+  </details>
+  <details class="fold">
+    <summary>Paste the Critic's verdict</summary>
+    <form method="post" action="/drafts/verdict" class="stack">
+      <input type="hidden" name="draft_id" value="{{ row.id if row else '' }}">
+      <textarea name="verdict" rows="8" placeholder="verdict:&#10;  id: IE_...&#10;  decision: keep | rewrite | bin"></textarea>
+      <button class="btn">Attach the verdict</button>
+      {% if not row %}<p class="hint">Save the draft first: the verdict is stored with it.</p>{% endif %}
+    </form>
+  </details>
+  <details class="fold">
+    <summary>The card as YAML</summary>
+    <div class="copyblock"><button class="btn small copy" data-copy="#yaml">Copy the YAML</button>
+      <pre id="yaml" class="code">{{ checks.yaml }}</pre></div>
+  </details>
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+numpy>=1.26
+pandas>=2.1
+matplotlib>=3.8
+pyyaml>=6.0
+requests>=2.31
+marimo>=0.23
+# the Ideas web app (starlette, uvicorn, markdown, python-multipart also come with marimo)
+starlette>=0.40
+uvicorn>=0.30
+jinja2>=3.1
+markdown>=3.5
+python-multipart>=0.0.9
+httpx>=0.27        # tests only (the Ideas app's test client)

@@ -1,0 +1,440 @@
+{
+ "source": "BRAIN announcement (EURO-TOP800.png) and EUR D1 TOP2500 theme dataset page (theme_datasets.pdf + THEME-DATASET2.pdf), saved by Zacc 2026-10-19",
+ "themes": [
+  {
+   "name": "EUR/D1 TOP800 Theme",
+   "region": "EUR",
+   "delay": 1,
+   "universe": "TOP800",
+   "start": "2026-10-12",
+   "end": "2026-11-08",
+   "multiplier": 2.0,
+   "python_multiplier": 3.0,
+   "datasets": [
+    "analyst4",
+    "analyst69",
+    "fundamental6",
+    "analyst14",
+    "model250",
+    "other176",
+    "model110"
+   ],
+   "note": "Delay-1 alphas in EUR on TOP800 that meet the theme: 2x multiplier, 3x for Python alphas.",
+   "priority_datasets": [
+    {
+     "name": "AI Equity Alpha Forecasts",
+     "id": null,
+     "fields": 582,
+     "coverage": 0.86,
+     "value_score": 4,
+     "alphas": 885,
+     "ai": true
+    },
+    {
+     "name": "Deep Learning Price Signal Dataset",
+     "id": null,
+     "fields": 28,
+     "coverage": 0.97,
+     "value_score": 5,
+     "alphas": 109,
+     "ai": true,
+     "listing": 2,
+     "note": "deep-learning price signals; few alphas, near-full coverage"
+    },
+    {
+     "name": "Return prediction from conference call",
+     "id": "model162",
+     "fields": 4,
+     "coverage": 0.58,
+     "value_score": 4,
+     "alphas": 24,
+     "ai": true
+    },
+    {
+     "name": "Deep Learning Chart-Based Alpha",
+     "id": "chart_cnn_alpha",
+     "fields": 122,
+     "coverage": 0.69,
+     "value_score": 4,
+     "alphas": 285,
+     "ai": true
+    },
+    {
+     "name": "Stock Selection DL model",
+     "id": null,
+     "fields": 2,
+     "coverage": 0.55,
+     "value_score": 3,
+     "alphas": 324,
+     "ai": true
+    },
+    {
+     "name": "Multi-Source Market Return Prediction",
+     "id": null,
+     "fields": 60,
+     "coverage": 0.58,
+     "value_score": 5,
+     "alphas": 143,
+     "ai": false,
+     "listing": 2,
+     "note": "return forecasts; check whether fields are per stock or market-level"
+    },
+    {
+     "name": "Multi Factor Market Return Predictions",
+     "id": null,
+     "fields": 648,
+     "coverage": 0.57,
+     "value_score": 5,
+     "alphas": 143,
+     "ai": false,
+     "listing": 2,
+     "note": "return forecasts; check whether fields are per stock or market-level"
+    },
+    {
+     "name": "Multi-Domain Quantitative Factor Library",
+     "id": "quant_factor_lib",
+     "fields": 126,
+     "coverage": 0.51,
+     "value_score": 5,
+     "alphas": 306,
+     "ai": false,
+     "listing": 2,
+     "category": "model"
+    },
+    {
+     "name": "London Stock Sentiment Signals",
+     "id": null,
+     "fields": 7,
+     "coverage": 0.16,
+     "value_score": 6,
+     "alphas": 11,
+     "ai": false
+    },
+    {
+     "name": "Sensitivity to the Inflation Change",
+     "id": "model140",
+     "fields": 3,
+     "coverage": 0.51,
+     "value_score": 4,
+     "alphas": 56,
+     "ai": false
+    },
+    {
+     "name": "Global Sales Allocation Model Data",
+     "id": "model307",
+     "fields": 15,
+     "coverage": 0.63,
+     "value_score": 4,
+     "alphas": 56,
+     "ai": false
+    },
+    {
+     "name": "Risk-Alleviated Momentum Scores",
+     "id": null,
+     "fields": 4,
+     "coverage": 0.55,
+     "value_score": 4,
+     "alphas": 69,
+     "ai": false
+    },
+    {
+     "name": "Behavioral Finance Signal Factors",
+     "id": null,
+     "fields": 7,
+     "coverage": 0.56,
+     "value_score": 4,
+     "alphas": 108,
+     "ai": false
+    },
+    {
+     "name": "Europe Analyst Estimate Daily Data",
+     "id": null,
+     "fields": 100,
+     "coverage": 0.69,
+     "value_score": 4,
+     "alphas": 238,
+     "ai": false
+    },
+    {
+     "name": "Europe Analyst Estimate Daily Data (2nd listing)",
+     "id": null,
+     "fields": 100,
+     "coverage": 0.93,
+     "value_score": 4,
+     "alphas": 249,
+     "ai": false,
+     "listing": 2,
+     "category": "analyst",
+     "note": "a second dataset with the same name as the page-1 one (different coverage and alpha count); tell them apart by id in Data Explorer"
+    },
+    {
+     "name": "Insider Transaction Analytics (2nd listing)",
+     "id": null,
+     "fields": 15,
+     "coverage": 0.44,
+     "value_score": 4,
+     "alphas": 40,
+     "ai": false,
+     "listing": 2,
+     "category": "insiders",
+     "note": "a second dataset with the same name as the page-1 one"
+    },
+    {
+     "name": "Comprehensive Factor Analytics Data",
+     "id": null,
+     "fields": 236,
+     "coverage": 1.0,
+     "value_score": 4,
+     "alphas": 331,
+     "ai": false
+    },
+    {
+     "name": "Global Seasonal Regime Return Signals",
+     "id": "global_seasonal_model",
+     "fields": 449,
+     "coverage": 0.99,
+     "value_score": 4,
+     "alphas": 1700,
+     "ai": false
+    },
+    {
+     "name": "Multi Horizon Analyst Revision Signals",
+     "id": "analyst_revision_horizons",
+     "fields": 1089,
+     "coverage": 0.69,
+     "value_score": 4,
+     "alphas": 2588,
+     "ai": false
+    },
+    {
+     "name": "Significant Developments Data",
+     "id": "news29",
+     "fields": 12,
+     "coverage": 0.69,
+     "value_score": 3,
+     "alphas": 64,
+     "ai": false,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "Conference call data",
+     "id": "news52",
+     "fields": 24,
+     "coverage": 0.47,
+     "value_score": 3,
+     "alphas": 87,
+     "ai": false,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "Intangible Asset Factors",
+     "id": null,
+     "fields": 8,
+     "coverage": 0.66,
+     "value_score": 3,
+     "alphas": 48,
+     "ai": false
+    },
+    {
+     "name": "Insider Transaction Analytics",
+     "id": null,
+     "fields": 16,
+     "coverage": 0.62,
+     "value_score": 3,
+     "alphas": 68,
+     "ai": false
+    },
+    {
+     "name": "Corporate Event Driven Stock Model",
+     "id": null,
+     "fields": 3,
+     "coverage": 0.55,
+     "value_score": 3,
+     "alphas": 135,
+     "ai": false
+    },
+    {
+     "name": "Global Media News Data",
+     "id": "news48",
+     "fields": 22,
+     "coverage": 0.63,
+     "value_score": 3,
+     "alphas": 144,
+     "ai": false,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "Fundamental Scores",
+     "id": "model16",
+     "fields": 24,
+     "coverage": 0.64,
+     "value_score": 3,
+     "alphas": 200,
+     "ai": false
+    },
+    {
+     "name": "Analyst Estimates Base Reference",
+     "id": "analyst_base_ref",
+     "fields": 17,
+     "coverage": 0.55,
+     "value_score": 3,
+     "alphas": 207,
+     "ai": false
+    },
+    {
+     "name": "News Analytic Model Data",
+     "id": "news38",
+     "fields": 30,
+     "coverage": 0.68,
+     "value_score": 3,
+     "alphas": 215,
+     "ai": false,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "MnA Deals Data",
+     "id": "news23",
+     "fields": 136,
+     "coverage": 0.45,
+     "value_score": 3,
+     "alphas": 259,
+     "ai": false,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "EBITDA Estimate Model",
+     "id": null,
+     "fields": 120,
+     "coverage": 0.68,
+     "value_score": 3,
+     "alphas": 297,
+     "ai": false
+    },
+    {
+     "name": "Structural Credit Risk Model",
+     "id": "model28",
+     "fields": 83,
+     "coverage": 0.87,
+     "value_score": 3,
+     "alphas": 752,
+     "ai": false
+    },
+    {
+     "name": "ESG scores",
+     "id": "analyst11",
+     "fields": 445,
+     "coverage": 0.85,
+     "value_score": 3,
+     "alphas": 918,
+     "ai": false
+    },
+    {
+     "name": "Global Analyst Earnings Forecasts",
+     "id": "analyst_earnings_ibes",
+     "fields": 42,
+     "coverage": 1.0,
+     "value_score": 3,
+     "alphas": 1028,
+     "ai": false
+    },
+    {
+     "name": "Alternative technical factor models",
+     "id": "model135",
+     "fields": 137,
+     "coverage": 0.55,
+     "value_score": 3,
+     "alphas": 1397,
+     "ai": false
+    },
+    {
+     "name": "Standardized Analyst Consensus Forecasts",
+     "id": "analyst_consensus",
+     "fields": 1929,
+     "coverage": 0.7,
+     "value_score": 3,
+     "alphas": 1406,
+     "ai": false
+    },
+    {
+     "name": "Predictive Analyst-Company Signal Set",
+     "id": "predictive_starmine",
+     "fields": 638,
+     "coverage": 0.8,
+     "value_score": 3,
+     "alphas": 2627,
+     "ai": false,
+     "listing": 2,
+     "category": "model"
+    },
+    {
+     "name": "Analysts' Factor Model",
+     "id": "model77",
+     "fields": 150,
+     "coverage": 0.78,
+     "value_score": 3,
+     "alphas": 6149,
+     "ai": false,
+     "listing": 2,
+     "category": "model",
+     "note": "crowded (6,149 alphas)"
+    },
+    {
+     "name": "AI Enhanced Equity Factor Transfer",
+     "id": "ai_factor_transfer",
+     "fields": 20,
+     "coverage": 1.0,
+     "value_score": 2,
+     "alphas": 747,
+     "ai": true
+    },
+    {
+     "name": "Headline Sentiment Analysis using DNN",
+     "id": null,
+     "fields": 23,
+     "coverage": 0.78,
+     "value_score": 2,
+     "alphas": 235,
+     "ai": true,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "News Sentiment Analysis using DNN",
+     "id": null,
+     "fields": 23,
+     "coverage": 0.82,
+     "value_score": 2,
+     "alphas": 394,
+     "ai": true,
+     "listing": 2,
+     "category": "news"
+    },
+    {
+     "name": "Text Mining Data",
+     "id": "model37",
+     "fields": 87,
+     "coverage": 0.7,
+     "value_score": 2,
+     "alphas": 1981,
+     "ai": true
+    },
+    {
+     "name": "Nonlinear adaptive model",
+     "id": null,
+     "fields": 20,
+     "coverage": 0.85,
+     "value_score": 2,
+     "alphas": 4751,
+     "ai": true
+    }
+   ],
+   "priority_note": "Zacc's priority list (19 Oct 2026), from BRAIN's EUR D1 TOP2500 Data > Datasets theme page, both pages (81 rows; one row cut at a page break on page 2 is missing): datasets with value score >= 3 plus the AI / deep-learning datasets, AI first, then by value score and fewest alphas. Every row on the page shows Theme Multiplier 1.3. Ids come from the GLB catalog where the names match (null = look it up in Data Explorer); GLB ids usually carry over, but check. Three names appear twice with different numbers (Europe Analyst Estimate Daily Data, Insider Transaction Analytics, Nonlinear adaptive model; also Fundamental Income and Dividend Model, value 2): they are different datasets, tell them apart by id. Coverage is TOP2500; check it again in TOP800. Page 2 is mostly News: EUR/D1/news is a Pyramid cell (multiplier 1.3) he has not touched. BRAIN's own recommended theme datasets (analyst4, analyst69, analyst14, model110) are value score 1 with tens of thousands of alphas: crowded.",
+   "priority": 1
+  }
+ ]
+}

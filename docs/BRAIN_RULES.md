@@ -1,0 +1,293 @@
+# BRAIN rules - what BRAIN's own pages say, checked against HYPOLAB
+
+One line per rule, with its source page and the date Zacc saved it. Status:
+- **OK** = HYPOLAB already does this
+- **MISSING** = HYPOLAB doesn't know it yet
+- **WRONG** = HYPOLAB does something different
+- **INFO** = background, no code needed
+
+Pages are numbered **[S1]..[Sn]** (list at the bottom). BRAIN's docs pages outrank community "BRAIN TIPS" posts; replies under
+those posts are other consultants' opinions and are treated as ideas, not rules.
+
+Last updated: 2026-10-19 (batches 1-5: 35 BRAIN pages, Zacc's Genius status page and region list, the EUR TOP800 theme announcement). Statuses reflect HYPOLAB **1.6.0** (later changes marked with their version).
+
+---
+
+## 0. Zacc's account right now (Genius page 2026-Q4, read 10 Oct 10:30) [S14]
+
+**Q4 thresholds** (Gold -> Expert -> Master): signals **20** / 120; Pyramids **10** / 30; Combined Alpha Performance
+**0.5** / 1.0. All three are counted **for the quarter** (Oct 1 - Dec 31), not lifetime.
+
+| Item | Now | Gap to Expert |
+|---|---|---|
+| Signals this quarter | 1 | 19 |
+| Pyramids this quarter | 0 | 10 |
+| Combined Alpha Performance | -0.01 | 0.51 |
+| Selected / Power Pool / Osmosis performance | "No matching Alphas" | - |
+| Tie-breakers (quarter) | 2 operators/alpha, 2 fields/alpha, 2 operators used, 2 fields used, community 0.7, max streak 5 | - |
+| Streak Freeze | **already used** in early October | the next missed day breaks the streak |
+| Osmosis | only IND/D1: **12 Alphas but 1,200,000 points** (must be exactly 100,000) | invalid; 2 more scopes needed |
+| Pyramid cells with Alphas this quarter | GLB/D1 Fundamental 1, GLB/D1 Price Volume 1 | - |
+
+- **Regions on his account** (Simulate dropdown, 10 Oct): USA, GLB, EUR, ASI, CHN, JPN, AMR, IND, DEU, GBR.
+- **Scopes with D0**: USA, EUR, CHN, JPN, AMR, DEU, GBR (Osmosis and Pyramid tables; **confirmed by Zacc on BRAIN, 10 Oct 11:08**). D1 only: GLB, ASI, IND.
+- **17 categories** in the Pyramid grid: Analyst, Broker (ASI only), Earnings, Fundamental, Imbalance, Insiders,
+  Institutions, Macro, Model, News, Option, Other, Price Volume, Risk, Sentiment, Short Interest, Social Media. Blank cells
+  = category not offered in that scope.
+- **Pyramid theme multipliers** range 1.0-1.9. They are low in USA D1 and GLB (mostly 1.0-1.4) and high in DEU, GBR,
+  JPN, AMR, CHN and every D0 scope (mostly 1.6-1.9). Examples: DEU D1 Analyst/Fundamental/Model 1.8; GBR D1
+  Fundamental 1.6; JPN D1 Fundamental 1.7; USA D1 Fundamental 1.1.
+- **Arithmetic for Expert:** 10 Pyramids need 30 Alpha-cell slots. An Alpha touching two categories (e.g.
+  fundamental / `cap`) fills two cells, so about 15 well-placed Alphas can reach 10 Pyramids inside the 20 signals.
+  Trade-off: two categories usually means two datasets, which gives up the single-dataset test (T1).
+
+## 1. Genius levels (the Expert goal)
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| G1 | Levels: Gold (default) -> Expert -> Master -> Grand Master. Evaluated quarterly; changes take effect in the first week of the next quarter. | S6 | INFO |
+| G2 | Three eligibility thresholds per quarter: (1) signals submitted (Alphas **and** SuperAlphas count), (2) Pyramids formulated, (3) Combined Alpha Performance. Thresholds are announced the quarter before. | S6 | OK (Genius bars in ideas.sqlite) |
+| G3 | **A Pyramid = region x delay x dataset category (e.g. USA-D1-analyst), formulated after at least 3 submitted Alphas in it.** One Alpha counts in every category its fields touch. | S6 | OK - `alphas_per_pyramid` = 3 (confirmed) |
+| G4 | Thresholds are pass/fail. If more people pass than there are slots (Gold 70%, Expert 20%, Master 8%, GM 2%), a **tie-breaker** decides. | S6 | OK (1.3.2) - Account tab shows the tie-breaker numbers |
+| G5 | Tie-breaker = sum of ranks of: avg distinct operators per Alpha (**lower** better), avg distinct fields per Alpha (**lower** better), total distinct operators (higher), total distinct fields (higher), max simulation streak, community (forum likes on posts >= 100 chars, referrals). `ts_backfill`/`group_backfill` are not counted as operators. | S6 | OK (1.3.2) - Account tab: operators/fields per alpha and distinct totals for the quarter; streak and community only on BRAIN's page |
+| G6 | Simulation streak: 1 automatic **Streak Freeze** per quarter (first missed day), does not roll over. Streak does not reset each quarter. | S6 | PARTLY (1.3.2) - reminder on the Account tab; no streak tracking |
+| G7 | Combined Alpha Performance = the **highest** of four (Zacc's page lists all four; the other three say "No matching Alphas, refreshed monthly"): all submitted Alphas OS, Alphas selected by WQ, Power Pool Alphas, **Combined Osmosis Performance**. Refreshed every 4-6 weeks. | S6, S10 | PARTLY (1.3.2) - Osmosis check on the Account tab; the four metrics themselves come from BRAIN's page |
+| G8 | **Alphas submitted in the last month of a quarter may not count toward that quarter's Combined Alpha Performance** (they still count for signals, Pyramids, value factor, and next quarter's performance). | S6 | OK (1.8.0) - `rules.last_month_warning`; the Ideas app's Week page and the DIGEST warn in the quarter's last month |
+| G9 | The Genius page's table says Gold research regions are USA, ASI, EUR, GLB, IND, CHN, GBR, DEU (Master adds AMR, JPN). **Zacc's account actually offers USA, GLB, EUR, ASI, CHN, JPN, AMR, IND, DEU, GBR** [S14]. His account wins. | S6, S14 | OK (1.3.2) - `account_regions` setting with his 10 regions; KOR dropped |
+| G10 | Gold sees ~50% of data fields and ~45% of operators; dropping a level can block re-simulating old Alphas that use lost fields/operators. | S6 | OK (operator sync uses the account's real list) |
+| G11 | SuperAlphas: any level, after **100 Alpha submissions**; max 1 SuperAlpha per day. Expert+ can use Alphas from same-university consultants, one wider-pool SuperAlpha per own-pool SuperAlpha previously submitted. | S6 | OK (1.10.0) - unlock at 100 lifetime REGULAR submissions, 1 a day kept apart from the 4 alphas; the cockpit's SuperAlpha tab (section 13) |
+| G12 | Quarterly-payment eligibility = used at least 4% of the quarterly limit of 4 Alphas + 1 SuperAlpha per day. | S6 | INFO |
+
+## 2. Osmosis (a fourth way to the performance bar)
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| O1 | Osmosis = your own combo: you allocate points to submitted Alphas per **scope** (region x delay). BRAIN computes its daily PnL. | S10 | OK (1.3.2) - Account tab Osmosis check |
+| O2 | Valid allocation: **at least 3 scopes**, each with **exactly 100,000 points spread over at least 10 Alphas**. Any Alpha type, any submission date. | S10 | OK (1.3.2) - scopes with >= 10 active alphas; points checked if BRAIN sends them |
+| O3 | Points lock every **Sunday 23:59 New York time** and are used from the Monday after next (7+ days later). Changing them mid-week is free; only Sunday's snapshot counts. | S10 | OK (1.3.2) - lock deadline shown |
+| O4 | Combined Osmosis Performance = after-cost Sharpe of the stitched weekly combos over the quarter; needs a valid allocation for **at least 6 weeks in the previous 3 months**. It is volatile (short window). | S10 | MISSING |
+| O5 | Daily Osmosis Rank: average rank of one day's PnL per scope -> a **1x-2x multiplier on daily base payment**. | S10 | INFO |
+| O6 | Building tips: Alphas with economic rationale only; more than 3 scopes; diversify datasets, categories, operators, neutralizations; prefer the simpler of two same-idea Alphas; **drop Alphas whose Sharpe falls ~60%+ with investability constraints (MaxTrade ON)** unless unique/different dataset; turnover buckets <10%, 10-20%, >20% - avoid >20% unless the constrained Sharpe holds; prune highly correlated Alphas and those that draw down together; adjust gradually. | S10 | PARTLY (1.3.2) - turnover buckets per scope; correlation pruning not yet |
+## 3. Submission tests
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| T1 | **Single Dataset Alpha** (BRAIN now also calls it an **ATOM** Alpha [S26]): fields from one dataset only (grouping fields country/exchange/market/sector/industry/subindustry - and, per S26, currency/split/adjfactor - don't count; `inst_pnl()`/`convert()` count as pv1). Skips the IS Ladder Sharpe test; instead last-2-year IS Sharpe >= **2.38 (D1)** / **3.96 (D0)**. | S1 | OK (1.3.2) - every rung and result shows its IS test; sandbox applies 2.38 |
+| T2 | Turnover < 30% -> IS-ladder thresholds x 0.85. **Unclear** whether it also lowers T1's cutoffs (2.38 -> 2.02). | S1 | CHECK on first real single-dataset result |
+| T3 | **Sub-universe test**: `sub_sharpe >= 0.75 * sqrt(sub_size / universe_size) * alpha_sharpe` (TOP3000 -> TOP1000: 0.433 x Sharpe). Sub Sharpe = alpha pasteurized to the sub-universe, market-neutralized, rescaled - not a fresh simulation. | S9 | OK (1.3.2) - sandbox uses 0.75 x sqrt(0.5) |
+| T4 | Sub-universe fixes: avoid size multipliers (`rank(-assets)`, `1-rank(cap)`); decay liquid and illiquid parts separately, e.g. `ts_decay_linear(s,5)*rank(volume*close) + ts_decay_linear(s,10)*(1-rank(volume*close))`; check which step broke it; accept that some signals aren't robust. | S9 | OK (1.3.2) - Diagnose suggests split decay first, size buckets second |
+| T5 | The D0 page says D0 exists only in USA, EUR, CHN; Zacc's Genius page shows D0 scopes for **USA, EUR, CHN, JPN, AMR, DEU, GBR** [S14]. Only some datasets have D0 fields; the D0 bar is higher. | S8, S14 | OK (1.3.2) - D0 for USA, EUR, CHN, JPN, AMR, DEU, GBR; synced from BRAIN |
+| T6 | "Weight is too strongly concentrated" -> use `rank`, `ts_rank`, `zscore`, `ts_zscore`. | S5 | OK (Diagnose wraps in rank) |
+
+## 4. Simulations and settings
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| S-1 | Every successful simulation counts, incl. multi-sim children and re-simulating an existing/duplicate Alpha. | S2 | OK (journal dedupe) |
+| S-2 | The daily limit resets at **midnight New York time** (07:00/08:00 Nairobi). | S2 | OK (1.3.2) - journal counts from New York midnight (simulations and submissions) |
+| S-3 | Simulation responses carry `X-Ratelimit-Limit / -Remaining / -Reset`. | S2 | OK (1.3.2) - saved to ~/.hypolab/quota.json, shown on the Lab tab, blocks when 0 |
+| S-4 | Search order: one field per group of similar fields, one operator per family (aggregational / delta / group), one window (fast 5/10/21, slow 63/121/252), one neutralization (market for single-country, country for multi-country, industry; risk types separately; STATISTICAL apart). 10-50 sims, then widen only if a signal shows. | S2 | OK (cards + 10-try budget) |
+| S-5 | Review "risk-handled" (SLOW_AND_FAST) and "investability-constrained" (MaxTrade ON) stats on every result; if risk-handled is better, try SLOW, FAST, CROWDING, REVERSION_AND_MOMENTUM. | S2 | MISSING in Diagnose |
+| S-6 | `neutralization: "CROWDING"` neutralizes against crowding style factors (e.g. momentum). | S7 | OK (1.3.2) - Lab offers every neutralization BRAIN lists for the region (sandbox still maps risk sets to MARKET) |
+| S-7 | Data page fields worth reading: coverage, **date coverage** (10y), description (skip timestamps/IDs), alpha count, user count. | S2 | PARTLY - catalog has coverage and alpha count; not date coverage or user count |
+| S-8 | D0 tips: event premia (M&A, earnings, buybacks) with `trade_when`; liquid universe (USA TOP1000 or smaller); don't change position at CHN price limits; re-simulate your D1 Alphas in D0; a good D0 Alpha keeps some D1 performance. | S8 | OK (1.8.0) - USA D0 defaults to TOP1000 unless you pick a universe |
+| S-9 | Python Alphas exist (`@alpha(data, store)`, float32 output); fast local sims only in BrainLabs. | S3 | INFO - later option |
+
+## 5. Research craft (ideas, not rules)
+
+| # | Advice | Src | Use in HYPOLAB |
+|---|---|---|---|
+| R1 | Reduce correlation by an **equivalent field** first (close -> open/vwap), then a **similar operator**, then a **meaningful grouping**; keep the idea pure, no "correlation fitting". | S4 | OK (1.3.2) - Diagnose follows this order |
+| R2 | Ways to lift returns: higher turnover, lower decay, more liquid universe, more volatility at the same drawdown, news/analyst datasets. | S11 | Use with care - **conflicts** with O6 (see below) |
+| R3 | Finite differences: multi-point backward derivatives, e.g. 3-point `(ts_delay(x,2h) - 4*ts_delay(x,h) + 3*x)`; second derivative `x - 2*ts_delay(x,h) + ts_delay(x,2h)` or `ts_delta(ts_delta(x,h),h)`; economic steps 0/-1/-2/-4 quarters. | S12 | New ladder rung patterns for growth/acceleration cards |
+| R4 | Technical indicators from price/volume (MA 10/50/200, Bollinger, RSI, VWAP); sources: Investopedia, Elearnmarkets, StockCharts ChartSchool. | S5 | Collector sources (phase 7); concept "technical indicator" |
+| R5 | Moments: variance (volatility, analyst disagreement), skewness, kurtosis (fat tails + negative skew = crash risk); `ts_co_skewness`, `ts_co_kurtosis`, `ts_covariance`; low correlation between revenue growth and net-income growth may signal cash burn. | S13 | Card ideas for the Writer project |
+
+## 6. Simulation results - what the numbers mean
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| M1 | Sharpe = sqrt(252) x IR, IR = mean(daily PnL) / std(daily PnL). Return = annualized PnL / half book ($10M of a $20M book, no reinvestment). Drawdown = largest peak-to-trough / $10M. Margin = PnL / dollars traded. | S18 | OK (sandbox uses the same) |
+| M2 | Fitness = Sharpe x sqrt(abs(Returns) / max(Turnover, 0.125)). | S18 | OK |
+| M3 | Rating label by Fitness: D1 Spectacular > 2.5, Excellent > 2, Good > 1.5, Average > 1, Needs Improvement <= 1. D0: > 3.25 / 2.6 / 1.95 / 1.3. | S18 | OK (1.3.2) - label next to Fitness in every diagnosis |
+| M4 | IS for consultants = 10 years ending 2 years ago; the latest 2 years (**Semi-OS**) are hidden from everyone. The Test Period setting splits IS into train/test. | S18, S16 | OK (`test_period` P2Y) |
+| M5 | Self-correlation panel lists your 5 most correlated submitted Alphas. | S18 | OK (gate checks self-correlation) |
+| M6 | Status: UNSUBMITTED -> ACTIVE (earns weight, counts for pay) -> DECOMMISSIONED if its dataset is retired or OS performance stays poor. | S18 | MISSING - Account tab should flag decommissioned Alphas (they leave Osmosis too) |
+
+## 7. Risk-neutralization sets
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| N1 | Beyond Market/Sector/Industry/Subindustry: **SLOW, FAST, SLOW_AND_FAST, REVERSION_AND_MOMENTUM (RAM), STATISTICAL, CROWDING**. All include market and industry; all assume long-short market balance. Page lists them for USA, EUR, ASI, CHN, GLB. | S20 | OK (1.3.2) - Lab lists the region's real options after the Account tab download |
+| N2 | Rule of thumb: SLOW for low-turnover signals, FAST or SLOW_AND_FAST for high-turnover. Neutralizing raises turnover (FAST most); worth it only if Sharpe rises too. Skip FAST if the idea has no reversion exposure by design. | S20 | PARTLY (1.3.2) - Diagnose suggests SLOW (< 20% turnover) or SLOW_AND_FAST on correlation failures |
+| N3 | RAM removes short-term reversion (~5 days) and 12-month momentum; it also strips the price effect out of ratios like `eps/close`. | S21 | MISSING - natural default for fundamental-over-price cards |
+| N4 | STATISTICAL = PCA-style return factors; different from SLOW/FAST, so test it separately. Said to keep performance while cutting risk. | S22, S2 | OK (GLB default) |
+| N5 | **Start by re-simulating your already-submitted Alphas with these sets** - some improve and come out less correlated with the original. | S20 | OK (1.3.2) - Account tab: re-run a submitted alpha with risk sets / D0 |
+## 8. Overfitting and duplicates
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| F1 | Robustness tests: rank test, binary test (`sign()` or a condition), sub/super-universe; train/test split. | S16 | OK (robustness battery has rank, binary, window twist) |
+| F2 | Don't pick the best parameter; prefer the second best, or **average the neighbours** (decay 4 vs 6 -> use 5, or the mean of both). Don't fit to tests. Don't chase "Excellent". | S16 | PARTLY - budget limits tries; no "blend neighbours" suggestion |
+| F3 | Don't concentrate weight in volatile stocks; reduce factor exposure. | S16 | OK (truncation, neutralization) |
+| F4 | Avoid duplicate simulations with a hash of the full payload (expression + all settings) before sending. | S15 | OK - `journal.fingerprint` hashes the **canonical** expression + settings (stricter than BRAIN's example). Add `unitHandling`, `language`, `instrumentType` to the keys before Python Alphas arrive |
+
+## 9. PnL realization horizon
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| H1 | Short component realizes in 1-5 days; long component over 10-20+ days. Most pools sit at 20+ days (low-turnover parts 40+). | S24 | MISSING (HYPOLAB doesn't read the horizon) |
+| H2 | Match the horizon to the idea: momentum/news < 10 days, fundamental 20-40, high turnover < 20. A mismatch hints at overfitting or a data problem. | S24 | MISSING - a Diagnose check once the API field is found |
+| H3 | Short-horizon Alphas are naturally less correlated with the existing pool. Shorten by subtracting a moving average of positions or using faster data (news, options). | S24 | INFO |
+| H4 | High Turnover (HTVR) campaign: turnover > 20% **and** (horizon < 20 days **or** high-TVR returns > 75% of total). | S24 | INFO |
+
+## 10. Data
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| D1 | MATRIX = one value per stock per day; VECTOR = a varying number of events per stock per day, must be reduced with `vec_*` first (`vec_avg, vec_sum, vec_count, vec_max, vec_min, vec_stddev, vec_ir, vec_range, vec_skewness, vec_kurtosis, vec_norm, vec_powersum, vec_percentage, vec_choose`). | S23, S25 | OK - binder wraps `vec_avg`, linter flags a bare VECTOR |
+| D2 | `vec_count(news field)` = news intensity (high intensity -> momentum, low -> reversion). Raw vector signals run ~130-200% turnover: decay or `ts_rank` before use. | S25 | MISSING - a card idea; Diagnose should expect very high turnover from raw `vec_*` |
+| D3 | Six probes for a new field (NONE neutralization, decay 0, read Long/Short Count): `x` (coverage), `x != 0 ? 1 : 0`, `ts_std_dev(x,N) != 0 ? 1 : 0` with N = 5/22/66 (update frequency), `abs(x) > X` (bounds), `ts_median(x,1000) > X` (median), `X < scale_down(x) && scale_down(x) < Y` (distribution). | S23 | MISSING - optional Data-tab helper (each probe costs a simulation) |
+| D4 | Dataset **Value Score** = how under-used a dataset is; prefer high scores. Not the same as Value Factor. | S23 | OK (1.8.0) - Cards ranking +0.3 per point above 2 (max +1.2); Data tab sorts by it |
+| D5 | Low coverage: `ts_backfill`, `kth_element`, `group_backfill`. | S23 | OK |
+
+## 11. Dataset notes (for the Writer and Critic projects)
+
+**option6 - implied volatility (USA; D1 133 fields, D0 131; TOP200-TOP3000, TOPSP500; ~95-97% coverage)** [S17]
+- Six families: constant-maturity IV (`opt6_30div` = 20-day anchor despite its name, `opt6_vimta3m`, `opt6_ivpctile1m`);
+  surface shape (`opt6_slopeavg1m/1y`, `opt6_slopestd1y`, `opt6_slopepctile`, `opt6_slopeinf`, `opt6_derivinf`,
+  `opt6_vired`); 20-day forecasts + their R-squared (`opt6_2rtscf`, `opt6_fcstr2imp`); earnings effect (`opt6_impliediee`,
+  `opt6_absavgernmv`, `opt6_lastern`; **avoid deprecated** `opt6_nexterntod`, `opt6_lasterntod`); dividends
+  (`opt6_divyield`, `opt6_divfreq`, `opt6_divamt` - less crowded than fundamental copies); cross-asset ratios
+  (`opt6_ivspyratio*`, `opt6_ivetfratio*`, `opt6_correlspy1m`, `opt6_correletf1y`).
+- Backfill at most 5 days. Sector neutralization for raw surface fields, Market for the ratio fields.
+- Slow by construction: use quarter windows (`ts_delta`, `ts_av_diff`, `ts_zscore` ~60); no `ts_mean` on already-smoothed
+  fields; 5-day changes are mostly noise.
+- Don't `ts_corr` two option6 fields (mechanically linked); use `ts_regression(..., rettype=0)` or
+  `subtract(ts_zscore(X,60), ts_zscore(Y,60))`.
+- Gate soft signals by model confidence: `trade_when(ts_mean(opt6_fcstr2imp, 60) > 0.5, signal, -1)`.
+
+**sentiment1 - research sentiment (USA; ~2000 of TOP3000)** [S19]
+- Sentiment scores move fast (high turnover, smooth them); analyst and earnings fields move slowly. Lookbacks > 63 days
+  lose relevance.
+- Try TOP1000 / TOPSP500, but keep enough long and short names.
+- Example fields: `snt1_cored1_score` (long > 5, short < -5), `snt1_d1_earningssurprise`, `snt1_d1_buyrecpercent` filtered by
+  `snt1_d1_analystcoverage`.
+
+## Conflicts and open questions
+
+1. **Returns vs. after-cost performance.** S11 (a 4-year-old tip) says raise turnover and lower decay for returns. S10 (Osmosis) and S8 (D0) say high turnover costs money, and Genius performance is **after cost**. HYPOLAB follows S10: keep `target_turnover` 5-40% and prefer < 20% for Osmosis picks.
+2. **T2:** does the < 30% turnover factor apply to the single-dataset 2Y cutoffs? Unknown until a real result shows the cutoff BRAIN prints.
+3. ~~Pyramid counts~~ **Resolved [S14]:** Pyramids are counted per quarter. Zacc's Q4 grid has only GLB/D1 Fundamental 1 and Price Volume 1. The diversity API rows HYPOLAB reads (IND/D1/Model 20) are not quarter-limited, so `PyramidTracker` must count Q4 submissions only (e.g. from `account_alphas` + field categories).
+4. ~~KOR vs Gold regions~~ **Resolved [S14]:** use his real list: USA, GLB, EUR, ASI, CHN, JPN, AMR, IND, DEU, GBR. Docs pages lag the account.
+5. **Combining signals (S4 replies):** community replies suggest blending with a fundamental signal - that makes an Alpha multi-dataset and loses T1's relaxed test. Prefer single-dataset unless the blend has a real reason.
+6. S12's second-derivative formula divides by h; it should be h squared. Harmless after normalization.
+7. **D0 regions:** the D0 page (S8) says USA/EUR/CHN only; his account shows D0 in 7 regions. Docs page is out of date.
+
+8. **Risk-neutralization regions:** S20 lists USA, EUR, ASI, CHN, GLB; his account also has JPN, AMR, IND, DEU, GBR. `simulation_options()` on his laptop answers this per region.
+9. **Turnover again:** the HTVR campaign (S24) wants turnover > 20%; the Osmosis tips (S10) say avoid > 20% unless the constrained Sharpe holds. Different goals: campaign rewards vs. after-cost combo. Default stays low turnover.
+10. **Windows:** S2 says start fast signals at 5/10/21 days; S17 says option6 fields need quarter windows. Dataset notes override the general rule.
+
+## Sources
+| ID | Page | Kind | Saved |
+|---|---|---|---|
+| S1 | Single Dataset Alphas | docs | 2026-10-10 |
+| S2 | Understanding simulation limits | docs | 2026-10-10 |
+| S3 | Brain Python Alphas | docs | 2026-10-10 |
+| S4 | [BRAIN TIPS] How do you reduce correlation of a good alpha? | tips (4y old) | 2026-10-10 |
+| S5 | [BRAIN TIPS] Getting Started with Technical Indicators | tips (3y) | 2026-10-10 |
+| S6 | Brain Genius | docs | 2026-10-10 |
+| S7 | Crowding Risk-Neutralized Alphas | docs | 2026-10-10 |
+| S8 | D0 | docs | 2026-10-10 |
+| S9 | How to pass the Sub-universe test? | docs | 2026-10-10 |
+| S10 | Osmosis Allocation Guide for Consultants | docs | 2026-10-10 |
+| S11 | [BRAIN TIPS] 5 ways to potentially increase returns of an alpha | tips (4y) | 2026-10-10 |
+| S12 | [BRAIN TIPS] Finite differences | tips (3y) | 2026-10-10 |
+| S13 | [BRAIN TIPS] Statistics in alphas research | tips (3y) | 2026-10-10 |
+| S14 | Zacc's Genius status page, 2026-Q4 + his Simulate region dropdown | his account | 2026-10-10 10:30 |
+| S15 | How can you avoid duplicate simulations? | docs | 2026-10-10 |
+| S16 | How can you avoid overfitting? | community post (4y) | 2026-10-10 |
+| S17 | Option6 Implied volatility (IV) | docs | 2026-10-10 |
+| S18 | Parameters in the Simulation results | docs | 2026-10-10 |
+| S19 | Sentiment1 dataset | docs | 2026-10-10 |
+| S20 | Risk Neutralized Alphas | docs | 2026-10-10 |
+| S21 | RAM Risk-Neutralized Alphas | docs | 2026-10-10 |
+| S22 | Statistical Risk-Neutralized Alphas | docs | 2026-10-10 |
+| S23 | Understanding Data in BRAIN: Key Concepts and Tips | docs | 2026-10-10 |
+| S24 | Understanding PnL Realization Horizon | docs | 2026-10-10 |
+| S25 | Vector Data Fields | docs | 2026-10-10 |
+
+## Correlation and new checks seen on the platform (2026-10-11, Zacc's screenshots) - 1.6.0
+| # | What BRAIN showed | HYPOLAB status |
+|---|---|---|
+| C1 | Right after simulating, the alpha page shows **Prod Correlation: Maximum 0.7802, Minimum -0.4484** (refreshable), before Check Submission. | OK (1.6.0) - `R.correlation(alpha, "prod")` reads it free, journal table `correlations` keeps it a day |
+| C2 | IS checks PENDING until Check Submission: Self-correlation, **Data overuse**, Production correlation, Alpha submissions quota, **Power Pool correlation**, Power Pool theme. | PARTLY - the gate treats SELF/PROD/POWER_POOL_CORRELATION rows as authoritative (PENDING = not ready); data overuse is shown as a platform check |
+| C3 | Warning: **"Theme GLB/D1 Risk Handled Crowding Factors/Fast Factors Theme does not match with multiplier of 2.5"** - risk-handled neutralizations earn a theme multiplier. | OK (1.6.0) - `decorr.theme_hints` turns it into a neutralization; Diagnose and Lower correlation try it first |
+| C4 | Warning: "Cluster Test Sharpe 0.57 is below cutoff of 1.58. Alpha does not qualify as Cluster Alpha." | INFO - meaning of Cluster Alpha not documented yet |
+| C5 | "Pyramid theme GLB/D1/PV matches with multiplier of 1. Effective pyramid count for Genius is 1." | INFO - confirms one alpha counts once per matching pyramid |
+| C6 | Production-correlation pass rule: does BRAIN pass an alpha above 0.7 whose Sharpe is clearly higher than the correlated one (as for self-correlation)? | UNKNOWN - HYPOLAB never blocks on its own reading once BRAIN's check has answered |
+
+## 12. Batch 5 (read 2026-10-19): rules HYPOLAB did not have
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| T7 | Self-correlation < 0.7, **or** a Sharpe at least 10% above every submitted alpha it correlates with above the cutoff (an improved version). Self-correlation uses a 4-year window. | S26 | OK (1.8.0) - gate applies the exception when BRAIN's table has correlation + sharpe |
+| T8 | **GLB sub-geography test**: Sharpe >= 1 in each of AMER, APAC and EMEA. Tips: AMER earnings signals, APAC microstructure, EMEA macro/currency. | S26 | OK (1.8.0) - Diagnose advice on `LOW_GLB_*` |
+| T9 | **ASI Japan robustness test**: Sharpe >= 1 in Japan. Improve in JPN, then re-simulate in ASI. | S26 | OK (1.8.0) - Diagnose recognises a failed check naming JPN/JAPAN (exact check name unconfirmed) |
+| T10 | Weight test: max weight < 10% per stock, and enough stocks hold weight for enough days. Submission order of messages: weight, correlation, fitness, D0-vs-D1, sub-universe. | S26 | INFO |
+| T11 | Sharpe bar: S26 says D1 > 1.25 and D0 > 2; the Region Agnostic page says 1.58 and the IS ladder uses 1.58. | S26, S29 | CONFLICT - HYPOLAB reads BRAIN's live limit from each result's checks; defaults stay 1.58 / 2.69 |
+| P1 | **Pyramid Alphas contribute to at most 2 Pyramids** (region x delay x category; grouping fields excluded). | S26 | OK (1.8.0) - `rules.pyramid_check`; cards, boosts and the gate flag 3+ categories. OPEN: whether a 3-category alpha still counts in 2 cells or in none |
+| PP1 | **Power Pool**: Sharpe >= 1.0; <= 8 operators in total incl. repeats (ts_backfill/group_backfill not counted); <= 3 unique fields; Power Pool correlation < 0.5 (or Sharpe 10% above the most correlated); turnover, sub-universe and robust-universe tests pass; theme conditions; description >= 100 characters (Idea / Rationale for data / Rationale for operators). Tagged alphas stay in the self-correlation pool. | S26, S27 | PARTLY (1.8.0) - `rules.power_pool_shape` on cards and the gate; tagging/correlation stay on BRAIN |
+| PP2 | Pure Power Pool quotas (since 22 Sep 2026): weeks 1-2 after the first one 4/day, weeks 3-4 2/day, weeks 5-6 1/day, then 1/day matching an active theme and 10 per calendar month per scope. [PP + ATOM] / [PP + Regular] alphas are exempt. | S27 | INFO |
+| G13 | Combined Power Pool performance is one of the four Combined Alpha Performance metrics (the highest counts). | S6, S27 | INFO - a route to the 0.5 bar |
+| RA1 | **Region Agnostic Alpha**: one simulation across USA, EUR, ASI, GLB (D1 only, RA universes SMALL/MEDIUM/LARGE, see `rules.RA_UNIVERSES`). Submittable when 2+ children pass Sharpe >= 1.58, Fitness >= 1.0, 2Y Sharpe >= 1.58, sub-universe and self-correlation; prod correlation tested on the parent. | S29 | INFO (1.8.0) - `rules.RA_NOTE`; HYPOLAB cannot send RA simulations yet (payload unknown) |
+| RA2 | RA quota: **one submission**, but Genius counts each submitted child as a **signal** and in its own **Pyramid**; the parent takes the max child theme multiplier. Osmosis points go to children only. | S29 | INFO - strongest lever for the signals and Pyramids bars |
+| FD1 | **Fast D1** (USA only): fields ending `_fast_d1` carry overnight data at the same Delay-1 setting; use `pv98_vwap_15m_delay_minus_1_returns_fast_d1` / `usa_vwap_15m_delay_minus_1_fast_d1` for returns/price at the cut-off. Submit only if it beats the D1 equivalent (except field_fast_d1 - field deltas); margin > 4 bps; ~50% of fields are VECTOR. | S30 | INFO - idea source |
+| HT1 | High Turnover classes (USA, turnover > 20%, horizon < 20 days or HTVR returns > 75%): after-cost Sharpe > 1; investable (Sharpe after maxtrade/maxpos > 2 and turnover > 20%); liquid (TOP200 Sharpe > 1 and TOP500/TOP200 > 0.7); orthogonal (submittable after RAM). | S31 | INFO |
+| N6 | Neutralization by data category: fundamental, analyst, earnings, short interest -> INDUSTRY; news -> SUBINDUSTRY; option, price-volume -> MARKET/SECTOR; social media, insiders, sentiment -> SUBINDUSTRY/INDUSTRY; institutions -> SECTOR/INDUSTRY; macro -> SECTOR/MARKET/INDUSTRY; model -> try all. With `group_neutralize` as the last step set settings to NONE / decay 0 / truncation 0. Country/exchange for EUR, ASI. | S28 | OK (1.8.0) - `rules.recommended_neutralization`; each card says when it differs (cards keep their own defaults) |
+| N7 | **Double neutralization**: `group_neutralize(x, densify(group_cartesian_product(industry, country)))` in EUR/ASI/GLB; two group_neutralize in a row partly undo each other. | S32 | INFO |
+| D6 | Group fields: `densify()` a group before using it; `bucket(rank(x), range=...)` builds custom groups. | S33 | INFO |
+| TH1 | **EUR/D1 TOP800 theme, 12 Oct - 8 Nov 2026**: 2x multiplier for regular alphas, 3x for Python alphas; requirement = Delay-1, EUR, TOP800; recommended datasets analyst4, analyst69, fundamental6, analyst14, model250, other176, model110 (the most crowded: value score 1). | S34 | OK (1.8.0) - `data/themes.json`; EUR is the plan for W43-W45; EUR defaults to TOP800 while the theme runs; Cards ranking bonus |
+| TH2 | EUR D1 theme dataset page (TOP2500, both pages, 81 rows; one row lost at a page break): every listed dataset shows Theme Multiplier 1.3. High value and few alphas: AI Equity Alpha Forecasts (582 fields, 86%, 885 alphas), Deep Learning Price Signal Dataset (value 5, 97%, 109 alphas), Multi-Source / Multi Factor Market Return Predictions (value 5, 143), Multi-Domain Quantitative Factor Library (value 5, 306), Return prediction from conference call, Deep Learning Chart-Based Alpha, Global Sales Allocation, Sensitivity to the Inflation Change, Risk-Alleviated Momentum, Behavioral Finance, Europe Analyst Estimate Daily Data (two datasets share the name), Comprehensive Factor Analytics, Global Seasonal Regime, Multi Horizon Analyst Revision; London Stock Sentiment (value 6, coverage 16%). Page 2 is mostly News (EUR/D1/news cell). | S38 | OK (1.8.0) - `priority_datasets` in themes.json (42 sets, AI first); ranking bonus 1.25 (1.5 for AI) |
+| PY1 | Python Alphas: `@alpha(data=[...], store=[...])`, return float32 of shape [n_instruments]; MATRIX fields only; no GLB, no VECTOR, no multi-sim; `adjfactor` to split-adjust per-share fields. Translating a working FASTEXPR alpha is the recommended first step. | S35, S3 | INFO - pays 3x in the EUR theme |
+| R6 | Research papers: check the dataset exists on BRAIN first; most paper ideas don't work as published (sometimes the opposite works); use them for direction, then improve. | S36 | OK (1.9.0) - the collectors' SOURCE blocks and skeleton drafts say so (OSAP: US sample, post-publication decay); a draft must bind in the region before Approve |
+| R7 | Submit the best version of an idea, not the first that passes; but low correlation beats a small Sharpe gain - move to a new idea rather than polishing a correlated one. | S26 | INFO |
+
+### Sources added in batch 5
+| ID | Page | Kind | Saved |
+|---|---|---|---|
+| S26 | Clear these tests before submitting an Alpha | docs | 2026-10-10 |
+| S27 | Power Pool Alphas | docs | 2026-10-10 |
+| S28 | Neutralization | docs | 2026-10-10 |
+| S29 | Region Agnostic Alpha | docs | 2026-10-10 |
+| S30 | Fast D1 Documentation | docs | 2026-10-10 |
+| S31 | High Turnover Alphas | docs | 2026-10-10 |
+| S32 | Double Neutralization | docs | 2026-10-10 |
+| S33 | Group Data Fields | docs | 2026-10-10 |
+| S34 | EUR/D1 TOP800 Theme announcement (EURO-TOP800.png) | announcement | 2026-10-19 |
+| S35 | How to translate Fast Expression Alpha into Python Alpha | docs | 2026-10-10 |
+| S36 | Build Alphas using research papers | docs | 2026-10-10 |
+| S37 | How to smooth the PnL curve | FAQ | 2026-10-10 (backfill NaN flips, decay/averaging, truncation < 0.1) |
+| S38 | Data > Datasets, EUR D1 TOP2500, theme filter, pages 1 and 2 (theme_datasets.pdf, THEME-DATASET2.pdf) | his account | 2026-10-19 |
+
+## 13. SuperAlphas (phase 8, read 2026-10-20) - 1.10.0
+BRAIN's own pages (S6) only say when SuperAlphas unlock and how many a day. The rest comes from community code built
+against the live API: treat it as **verify live**, and let BRAIN's own checks and error messages decide.
+
+| # | Rule | Src | Status |
+|---|---|---|---|
+| SA1 | A SuperAlpha combines alphas **you have submitted** in one region and delay: a **selection** expression scores each alpha on its properties, BRAIN keeps the top `selectionLimit`; a **combo** expression weights the kept alphas day by day. | S39, S40 | OK (1.10.0) - `hypolab/superalpha.py` |
+| SA2 | Request: `{"type": "SUPER", "settings": {..., "selectionLimit", "selectionHandling", "componentActivation"}, "selection": "...", "combo": "..."}` - the expressions at the top level (on retrieval they come back as objects with `code`). | S39 | VERIFY LIVE - `superalpha.make_payload`; `summarize_alpha` reads `combo.code` |
+| SA3 | `selectionLimit` >= 10; `selectionHandling` POSITIVE (default: only scores > 0 count, so a product of conditions drops an alpha by scoring 0) / NON_ZERO / NON_NAN; `componentActivation` IS (each alpha from its in-sample start) or OS (only from its out-of-sample start). | S39, S40 | VERIFY LIVE - checked before simulating |
+| SA4 | BRAIN drops alphas past **8,000 operators** across the kept ones (a warning, not a failure): cap each alpha at 8,000 / limit. | S39 | OK - every HYPOLAB selection recipe carries `(operator_count <= 8000 / limit)`; the check warns when a selection has no cap |
+| SA5 | A SuperAlpha's turnover must sit between **2% and 40%**; decay smooths an over-trading combination. | S39 | VERIFY LIVE - gate line + diagnosis (raise decay) |
+| SA6 | At most **three SuperAlpha simulations at once** per person; SuperAlphas are never multi-simulated. | S39 | OK - HYPOLAB sends one at a time behind a button |
+| SA7 | Selection names seen: `own`, `color`, `self_correlation`, `prod_correlation`, `turnover`, `long_count`, `short_count`, `operator_count`, `datacategory_count`, `datacategories` with `in(...)`, `decay`, `universe`, `universe_size(universe)`, `&&`, `||`, `not(...)`. Combo: `generate_stats(alpha)` then `stats.returns` with `ts_ir`, `ts_std_dev`, `ts_sum`, `self_corr`, `reduce_max/avg/sum/powersum`, `if_else`, `nan`; BRAIN's `combo_a(alpha)` (modes algo1-3). | S39, S40 | VERIFY LIVE - unknown names are warnings, never blocks (Gold may see a different list) |
+| SA8 | Unknown: whether a SuperAlpha counts in Pyramid cells (HYPOLAB does not place it), which correlation checks it gets (self vs your other SuperAlphas?), and whether its bars differ from an alpha's. | - | OPEN - read the first live result's checks |
+| SA9 | The same community code documents the **Region Agnostic** request: `type: "REGION_AGNOSTIC"`, settings region `ALL`; BRAIN answers with an `RA_PARENT` carrying up to four `RA_CHILD` alphas (one per region). | S39 | INFO - would close RA1's "payload unknown" (not built) |
+
+### Sources added for SuperAlphas
+| ID | Page | Kind | Saved |
+|---|---|---|---|
+| S39 | Alpha Harness, `backend/src/alpha_harness/labs/super_alpha.py` and `brain/schemas.py` (github.com/residual-lab/alpha-harness, MIT, commit of 2026-10-07; "measured live" notes) | community code | 2026-10-20 |
+| S40 | wqbkit 0.4.7 (PyPI), `modules/super_alpha/super_alpha_creator.py` | community code | 2026-10-20 |

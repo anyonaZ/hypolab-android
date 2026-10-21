@@ -1,0 +1,4 @@
+<nav class="tabs" aria-label="Where the leads come from">
+  <a href="/leads" class="{{ 'on' if sub == 'journal' }}">From your journal{% if nav.leads %} ({{ nav.leads }}){% endif %}</a>
+  <a href="/leads/sources" class="{{ 'on' if sub == 'sources' }}">From outside{% if nav.sources %} ({{ nav.sources }} new){% endif %}</a>
+</nav>

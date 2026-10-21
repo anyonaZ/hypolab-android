@@ -1,7 +1,11 @@
 __pycache__/
 *.pyc
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-*.apk
+.ipynb_checkpoints/
+*.egg-info/
+credentials.json
+session.json
+__marimo__/
+*.sqlite
+*.sqlite-journal
+*.bak
+settings.json

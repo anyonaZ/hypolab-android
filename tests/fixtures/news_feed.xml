@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<channel>
+  <title>Test markets feed</title>
+  <link>https://example.com/</link>
+  <description>fixture</description>
+  <item><title>Acme cuts full-year guidance as demand slows</title><link>https://example.com/a1</link><pubDate>Mon, 19 Oct 2026 12:00:00 GMT</pubDate><description>Shares fell 8%.</description></item>
+  <item><title>Globex lowers its outlook for 2026</title><link>https://example.com/a2</link><pubDate>Tue, 20 Oct 2026 09:00:00 GMT</pubDate></item>
+  <item><title>Initech slashes forecast after weak quarter</title><link>https://example.com/a3</link><pubDate>Mon, 19 Oct 2026 15:00:00 GMT</pubDate></item>
+  <item><title>Hooli beats estimates and raises guidance</title><link>https://example.com/a4</link><pubDate>Mon, 19 Oct 2026 16:00:00 GMT</pubDate></item>
+  <item><title>Analyst downgrades Umbrella Corp to sell</title><link>https://example.com/a5</link><pubDate>Mon, 19 Oct 2026 17:00:00 GMT</pubDate></item>
+  <item><title>Wonka CEO to step down after ten years</title><link>https://example.com/a6</link><pubDate>Sun, 18 Oct 2026 10:00:00 GMT</pubDate></item>
+  <item><title>Celebrity chef opens a new restaurant</title><link>https://example.com/a7</link><pubDate>Mon, 19 Oct 2026 10:00:00 GMT</pubDate></item>
+  <item><title>Old story: Soylent cuts guidance</title><link>https://example.com/old</link><pubDate>Mon, 01 Jun 2026 10:00:00 GMT</pubDate></item>
+</channel>
+</rss>
