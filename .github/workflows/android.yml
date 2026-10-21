@@ -49,6 +49,12 @@ jobs:
           V=$(grep versionName android/app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
           cp android/app/build/outputs/apk/release/app-release.apk "hypolab-$V.apk"
           ls -la *.apk
+      - name: Show which key signed the APK
+        run: |
+          AS=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          FP=$("$AS" verify --print-certs hypolab-*.apk | grep -m1 "SHA-256" | sed 's/.*: //')
+          echo "::notice title=signer::SHA-256 $FP"
+          if [ -n "$HYPOLAB_KEYSTORE" ] && [ -z "$FP" ]; then echo "::error::could not read the signer"; exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
           name: hypolab-apk
