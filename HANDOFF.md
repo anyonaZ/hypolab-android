@@ -346,6 +346,11 @@ practice market's peak on 4 GB together with a WebView.
   app, Paste, the keyboard. Installed from run 39680957346, signed with the permanent key (SHA-256 D4:4F:D3:CE...
   78:C0, shown by the workflow's "signer" notice). Not yet measured: memory of WebView + server + market together.
 
+### App icon (1.12.1)
+Adaptive icon in `android/app/src/main/res/`: background = Matrix ink with faint chart rules; foreground = a lab
+flask whose green signal line breaks out through the glass (an idea that survives testing); a monochrome layer for
+Android's themed icons. Vector drawables only (no PNGs). Zacc asked for it on 22 Oct.
+
 ### Signing (needed before data matters)
 The permanent key is never in the repo. Workflow secrets: `HYPOLAB_KEYSTORE_B64` (base64 of the .jks, alias
 `hypolab`) and `HYPOLAB_STORE_PASSWORD` (store and key password). Without them the APK is debug-signed with a key that

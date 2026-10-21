@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HYPOLAB icon: a lab flask whose signal line breaks out through the glass (an idea that survives testing). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#0F2A1E"
+        android:pathData="M40.8,60 L67.2,60 L72.5,71 Q75,77.5 68,77.5 L40,77.5 Q33,77.5 35.5,71 Z" />
+    <group>
+        <clip-path android:pathData="M48,45 L35.5,71 Q33,77.5 40,77.5 L68,77.5 Q75,77.5 72.5,71 L60,45 Z" />
+        <path android:strokeColor="#3DDC97" android:strokeWidth="2.6" android:strokeLineCap="round"
+            android:strokeLineJoin="round" android:pathData="M37,72 L44,66 L50,69 L57,60 L63,62" />
+    </group>
+    <path android:strokeColor="#3DDC97" android:strokeWidth="2.6" android:strokeLineCap="round"
+        android:pathData="M63,62 L76,46.5" />
+    <path android:strokeColor="#3DDC97" android:strokeWidth="3" android:strokeLineCap="round"
+        android:strokeLineJoin="round" android:pathData="M48,31 L48,45 L35.5,71 Q33,77.5 40,77.5 L68,77.5 Q75,77.5 72.5,71 L60,45 L60,31" />
+    <path android:strokeColor="#3DDC97" android:strokeWidth="3" android:strokeLineCap="round" android:pathData="M44.5,31 L63.5,31" />
+    <path android:fillColor="#B9F3D6" android:pathData="M76,46.5m-2.8,0a2.8,2.8 0,1 1,5.6 0a2.8,2.8 0,1 1,-5.6 0" />
+    <path android:fillColor="#3DDC97" android:fillAlpha="0.7" android:pathData="M52,38m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0" />
+    <path android:fillColor="#3DDC97" android:fillAlpha="0.5" android:pathData="M56,34.5m-1,0a1,1 0,1 1,2 0a1,1 0,1 1,-2 0" />
+</vector>
