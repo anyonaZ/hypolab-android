@@ -342,7 +342,9 @@ practice market's peak on 4 GB together with a WebView.
   `network_security_config.xml`: clear text only to 127.0.0.1. `configChanges` keeps the page on rotation.
 - Tests: `tests/test_android_phase_b.py` runs the real launcher on the laptop (secret, cookie, pages, fonts, POST
   guard); `tests/test_platform_desktop.py` proves the desktop is unchanged (no secret, cockpit link, 500 stocks).
-- Not yet measured on the tablet: memory of WebView + server + 250-stock market together (expected well under 1 GB).
+- **Checked on the tablet (22 Oct, 00:57): everything works** - start, the four pages, Copy, Share to the Claude
+  app, Paste, the keyboard. Installed from run 39680957346, signed with the permanent key (SHA-256 D4:4F:D3:CE...
+  78:C0, shown by the workflow's "signer" notice). Not yet measured: memory of WebView + server + market together.
 
 ### Signing (needed before data matters)
 The permanent key is never in the repo. Workflow secrets: `HYPOLAB_KEYSTORE_B64` (base64 of the .jks, alias
