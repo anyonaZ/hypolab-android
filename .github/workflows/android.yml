@@ -5,18 +5,19 @@ on:
   workflow_dispatch:
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # has the Android SDK preinstalled
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
-      - uses: actions/setup-python@v5   # Chaquopy needs a build-machine Python of the same version
+      - uses: actions/setup-python@v6   # Chaquopy needs a build-machine Python of the same version
         with:
           python-version: "3.11"
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK
+        run: echo "ANDROID_HOME=$ANDROID_HOME"; ls "$ANDROID_HOME"
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
@@ -33,7 +34,16 @@ jobs:
       - name: Build APK
         env:
           HYPOLAB_STORE_PASSWORD: ${{ secrets.HYPOLAB_STORE_PASSWORD }}
-        run: gradle -p android assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --stacktrace 2>&1 | tee "$RUNNER_TEMP/build.log"
+      - name: Report the error as an annotation
+        if: failure()
+        run: |
+          f="$RUNNER_TEMP/build.log"
+          [ -f "$f" ] || exit 0
+          msg=$( (grep -n -i -A3 "what went wrong\|error:\|exception\|failed" "$f" | head -60; echo ---; tail -40 "$f") | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          echo "::error title=build::$msg"
       - name: Rename
         run: |
           V=$(grep versionName android/app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
