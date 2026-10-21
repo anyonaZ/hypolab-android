@@ -1,6 +1,12 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-20 (night): **HYPOLAB 1.10.3 = 1.10.2 + the idea team's paste boxes and agent pack v3.** A review
+State on 2026-10-22: **HYPOLAB 1.11.0 = 1.10.3 + Android phase A (the feasibility spike) + no scipy.** The code now
+lives in the private GitHub repo `anyonaZ/hypolab-android` (desktop code at the root, the Android app in `android/`,
+the APK built by GitHub Actions). scipy is gone from the shared code (`hypolab/_stats.py`, matched to scipy in
+`tests/test_stats_noscipy.py`); the full suite passes with scipy blocked: **331 tests**. The spike ran on Zacc's
+tablet; see "Android track - phase A (1.11.0)" below.
+
+Before that, 2026-10-20 (night): **HYPOLAB 1.10.3 = 1.10.2 + the idea team's paste boxes and agent pack v3.** A review
 of Zacc's agent pack v2 (prompts only) against the code found that the chats' output is only checked where it is
 pasted into HYPOLAB, and that those boxes lost data silently: `# from:` lines were matched to cards by count (a missing
 one or a "no card" slot shifted every source), an import overwrote a waiting draft with the same id (and un-binned a
@@ -281,6 +287,31 @@ Tables: `journal.sqlite` = ideas, experiments, submissions, lessons, binned, pen
 - Backlog from the 1.8.1 review: use the Reviewer's dead ends in the ranking; batch boost candidates; per-region dead
   ends; show BRAIN's risk-handled / investability stats (S-5); PnL realization horizon check (H1-H2); Osmosis
   correlation pruning (O6); a Region Agnostic payload once its shape is known.
+
+## Android track - phase A (1.11.0, 22 Oct)
+Goal: HYPOLAB as a standalone Android app on Zacc's **Galaxy Tab A9 LTE, SM-X115, 4 GB RAM (3642 MB seen), Android 16
+(API 36), arm64-v8a, 800 x 1340 screen**. The prompt is `docs/ANDROID_HANDOFF_PROMPT.md`.
+
+Decisions taken with Zacc (21 Oct): the journal moves between devices with a **hand-over token** (one writer at a
+time); the cockpit's tabs are ported to **Starlette pages that the desktop shares** (marimo stays on the desktop until
+Zacc decides to drop it); the APK is built by **GitHub Actions** in the private repo (this workspace cannot reach
+Google/Maven; the laptop is too small for Gradle).
+
+What exists: `android/` = Kotlin + Chaquopy 16.0.0 (AGP 8.5.2, Gradle 8.9, Python 3.11, minSdk 26, targetSdk 35).
+A Gradle `Sync` task copies `hypolab/`, `ideaengine/`, `ideaweb/`, `data/` into the build (never edited there).
+`android/app/src/main/python/spike.py` + `MainActivity.kt` = one RUN SPIKE button that reports time and memory per step.
+Workflow `.github/workflows/android.yml` (ubuntu-24.04 has the SDK; error text is posted as an annotation, readable
+without a login). **Signing:** the permanent key is NOT in the repo (a safety check refused it, rightly); the workflow
+reads secrets `HYPOLAB_KEYSTORE_B64` + `HYPOLAB_STORE_PASSWORD`, and without them signs with a throwaway debug key.
+The spike APK is debug-signed, so it must be uninstalled before the first permanently signed APK (it holds no data).
+
+Spike on the tablet (22 Oct, 00:13): every step ok. Python start 0.4 s; numpy+pandas+matplotlib+starlette+engine
+imports ~4 s, RSS 272 MB; half-size market (250 stocks) 2.1 s, peak 571 MB; full market (500) 5.5 s, **peak 878 MB**;
+one sandbox simulation 0.65 s; robustness 3.2 s; gate 3.3 s; whole loop 19 s. Memory was released when the run
+ended. The device had only ~0.9 GB "available" before the run (Android frees other apps' memory on demand); the
+Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
+Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
+practice market's peak on 4 GB together with a WebView.
 
 ## Phase 7 - collectors (1.9.0, Oct 20)
 Design v2's "Idea sources" table, built without any AI call (decision 1): the collectors read, HYPOLAB tags and ranks,
