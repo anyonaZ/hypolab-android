@@ -1,12 +1,18 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22: **HYPOLAB 1.15.0 = 1.14.0 + Android phase C3: Data (with the dataset explore/scan), Account
-and Setup as web pages** (`ideaweb/account.py`; templates `data.html`, `account.html`, `setup.html`). **The web app now
-covers everything the marimo apps did** (cockpit tabs, dataset scan, quant basics) on the laptop and the tablet;
-marimo still runs on the laptop and stays until Zacc decides to drop it (ask first). C1 (1.13.0) brought Lab, Play,
-Quant basics; C2 (1.14.0) Journal, Pyramids, SuperAlpha. **377 tests pass.** Code: private repo
-`anyonaZ/hypolab-android`; GitHub Actions builds the signed APK. Next: phase D (tablet login with the Android
-Keystore, the face scan in a Custom Tab, live BRAIN on the tablet). See "Android track" below.
+State on 2026-10-22 (afternoon): **HYPOLAB 1.16.0 = 1.15.0 + 1.10.4 (the `analyst_skill` concept, merged from the
+desktop line) + the web app as THE HYPOLAB system.** `python -m hypolab web` starts every page (`ideas` is the old
+name); README, USER_GUIDE (rewritten page by page), HOW_IT_WORKS (section 24), LEARNING_PATH, the setup script, the
+idea team's README and the HYPOLAB Project instructions now describe one web app; every engine message points to
+pages ("the Account page"), not cockpit tabs; "Send to the Lab" opens the Lab page. The marimo apps still run
+(`python -m hypolab cockpit`) for comparison. Knowledge pack regenerated: re-upload 02, 06, 07, 08, 09. **381 tests
+pass** (`python tests/run_all.py`). Code: private repo `anyonaZ/hypolab-android` (desktop code at the root, the Android
+app in `android/`); GitHub Actions builds the signed APK. Next: phase D (live BRAIN on the tablet; no Keystore - see
+decision 12). **There is now ONE line of code: make every change in this repo** (the 1.10.x desktop zips are merged
+up to 1.10.4).
+
+Before that: 1.15.0 (C3: Data, Account, Setup), 1.14.0 (C2: Journal, Pyramids, SuperAlpha), 1.13.0 (C1: Lab, Play,
+Basics), 1.12.x (B: the Ideas app on the tablet + the icon), 1.11.0 (A: spike; no scipy) - all 22 Oct.
 
 Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
 no scipy.
@@ -166,7 +172,7 @@ Weekly Reviewer) plus the HYPOLAB-IDEAS project carry the AI side; HYPOLAB never
 | `hypolab/research.py` | `Researcher`: ideas, card(id), test, follow, boost, decorrelate, scan, robustness, gate, submit, rerun, play, recover_pending |
 | `hypolab/ideas.py` | Binding cards to fields (`build_card`, `data_universe` fallback), ranking (`_score` + `_journal_context`), data-first lenses (`explore_dataset`) |
 | `hypolab/hypotheses.py`, `hypolab/library/hypotheses.yaml` | Card format + loader (built-in 47 + `~/.hypolab/library/*.yaml`, cached by mtime); `validate_library` |
-| `hypolab/concepts.py` | ~82 economic concepts; field nature classifier; direction hints |
+| `hypolab/concepts.py` | 88 economic concepts (1.10.4: `analyst_skill`); field nature classifier; direction hints |
 | `hypolab/catalog.py` | `catalog.sqlite`: datasets + fields per region/universe/delay, sync from BRAIN, concept search, disk cache |
 | `hypolab/fastexpr.py`, `hypolab/linter.py`, `hypolab/operators.py` | FASTEXPR parser; linter (Gold + live operator list, arity, named params, vectors, groups, windows); operator registry |
 | `hypolab/brain.py`, `hypolab/connect.py` | BRAIN API client (login in two steps, retries, multi-simulation, quota); mode switch, CLI/web login |
@@ -191,7 +197,7 @@ Weekly Reviewer) plus the HYPOLAB-IDEAS project carry the AI side; HYPOLAB never
 | `data/` | `catalog_GLB_MINVOL1M_D1.json.gz` (bundled field list), `pyramid_multipliers_2026Q4.json`, `themes.json` (EUR theme + 42 priority datasets), `osap_SignalDoc.csv.gz` + `OSAP_NOTICE.md` (OSAP signal list, GPL-2.0), `THIRD_PARTY_NOTICES.md` (Alpha Harness MIT notice for the SuperAlpha recipes; OSAP) |
 | `docs/` | `USER_GUIDE.md` (every capability in plain words, 1.10.1), `BRAIN_RULES.md` (every rule + source + status), `HOW_IT_WORKS.md`, `LEARNING_PATH.md`, `AUDIT.md`, `eur_theme_priority_datasets.md`, `ANDROID_HANDOFF_PROMPT.md` (the prompt that starts the Android track) |
 | `claude_projects/` | Instructions for the Projects (0 HYPOLAB, 1-4 team) + generated knowledge pack |
-| `tests/` | One file per area (core, pipeline, connect, links, ideaengine, account, brain_rules, play, resume, bin_boost_speed, drafts, decorr, ideaweb, phase4, phase5, review_181, phase7, review_191, phase8, review_1101, review_1102, apps smoke test); `tests/run_all.py` runs each in its own process; `tests/fixtures/` (an arXiv Atom page, an RSS feed) |
+| `tests/` | One file per area (core, pipeline, connect, links, ideaengine, account, brain_rules, play, resume, bin_boost_speed, drafts, decorr, ideaweb, phase4, phase5, review_181, phase7, review_191, phase8, review_1101, review_1102, review_1103, analyst_skill, apps smoke test); `tests/run_all.py` runs each in its own process; `tests/fixtures/` (an arXiv Atom page, an RSS feed) |
 
 ## Files in `~/.hypolab/` (one writer each)
 | File | Writer | Notes |
@@ -218,10 +224,12 @@ Tables: `journal.sqlite` = ideas, experiments, submissions, lessons, binned, pen
 2. **No second card format and no second simulation log.** Drafts are HYPOLAB cards; the journal is the catalog.
 3. **Trial budget is HYPOLAB's** `max_sims_per_idea` (10). The gate's deflated Sharpe counts every try.
 4. Engine card ids start with `IE_`; a user card whose id clashes with a built-in one is skipped (built-in wins).
-5. **Screens:** marimo for everything that simulates (every simulation behind a `run_button`); since 1.7.0 the
-   idea side (forms, lists) is the Ideas web app. Never move simulations into the web app.
-   Submit needs a READY gate, the typed `SUBMIT <alpha_id>`, and fewer than 4 submissions today.
-6. Apps never block on `input()`: the Setup tab shows the face-scan link plus a button.
+5. **Screens (changed 21-22 Oct, Zacc):** the web app (`ideaweb/`) is HYPOLAB's main screen on the laptop and the
+   tablet (1.16.0). Its idea pages (Week, Leads, Cards, Drafts) never simulate; on the Lab-side pages every
+   simulation sits behind its own button and runs as one background job (never queued, never repeated by itself).
+   The old marimo apps stay on the laptop for comparison until Zacc decides to drop them (ask first); do live work in
+   one of the two at a time. Submit needs a READY gate, the typed `SUBMIT <alpha_id>`, and fewer than 4 today.
+6. Pages never block on `input()`: the Setup page shows the face-scan link plus a button.
 7. Sandbox uses an in-memory journal and an in-memory catalog (never touches the real files).
 8. Plan (Zacc, 19 Oct): EUR first while the EUR/D1 TOP800 theme runs - W43 EUR Analyst+Model, W44 EUR
    Fundamental+Analyst, W45 EUR Model+PV+Risk - then W46-W47 USA and W48-W49 GLB (the ten tier-1 USA/GLB cells),
@@ -230,6 +238,8 @@ Tables: `journal.sqlite` = ideas, experiments, submissions, lessons, binned, pen
 10. The learning loop only advises: it moves cards in the ranking and lists leads; it never simulates, drafts
     without a click, approves or bins. Its rules live in ONE place (`hypolab/learning.py`).
 11. BRAIN's own checks are the authority on correlation; HYPOLAB's reading only blocks when BRAIN has not answered.
+12. **The tablet never saves the BRAIN password** (Zacc, 22 Oct: he types it at every login). Only BRAIN's session
+    (a few hours) is kept, in the app's private storage. No Keystore storage is needed for phase D.
 
 ## Settings (`~/.hypolab/settings.json` holds only your changes; defaults in `hypolab/config.py`)
 | Key | Default | Used for |
@@ -326,6 +336,21 @@ ended. The device had only ~0.9 GB "available" before the run (Android frees oth
 Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
+
+## 1.16.0: one system (22 Oct, afternoon)
+- Merged 1.10.4 from the desktop line: `hypolab/concepts.py` (`analyst_skill`, the forecaster-record `ratio` nature
+  rule, `target_price` exclusions), `tests/test_analyst_skill.py`, the knowledge pack's 02 and 07, docs.
+- The web app is the main system: `python -m hypolab web` (`hypolab/__main__.py`); brand "HYPOLAB" (not "HYPOLAB
+  ideas"); the marimo link in the side rail reads "Old marimo screens" (laptop only). ~25 engine/web messages
+  reworded from "the cockpit's X tab" to "the X page" (brain, connect, research, ideas, superalpha, linter, account,
+  connection.LOGIN_HELP, sources, drafts, knowledge_pack, planner, lab). "Send to the Lab" from Cards and Leads
+  redirects to /lab, which picks the card up (`tests/test_ideaweb.py` follows the new flow).
+- Docs rewritten for one web app: README, `docs/USER_GUIDE.md` (sections 1-6 by page group: Ideas, Lab, Records,
+  Account; 7-11 unchanged in substance), `docs/HOW_IT_WORKS.md` section 24 (architecture of the web app and the
+  Android app), LEARNING_PATH, BRAIN_RULES G11 wording, `setup_arch.sh`, `claude_projects/README.md`,
+  `claude_projects/0_hypolab_project.md` (the HYPOLAB Project's instructions: paste them into the Project).
+- Knowledge pack regenerated (sandbox home, so 07/08 are the empty-journal versions; Zacc's Rebuild on his own journal
+  fills them).
 
 ## Android track - phase C3 (1.15.0, 22 Oct)
 - `/data`: catalog contexts (`?ctx=region|universe|delay`), datasets by value score (tap one: `?ds=` shows the
@@ -485,6 +510,27 @@ Scout & Writer (or Zacc) writes the mechanism.
   assistant's edit of a scheduled task was blocked). 1.9.1 numbers the rows; the prompt sentence "ONE of the 3 ideas
   may build on the row whose number is today's weekday (Monday = 1 ... Friday = 5; if that row gets "no card", the
   next row)" goes in with it.
+
+## 1.10.4: analyst_skill (22 Oct)
+Scout & Writer's BRIEF B-20261022-1234 read 39 of ~100 field pages of anl93 (Europe Analyst Estimate Daily Data):
+per-analyst price-target track records, all VECTOR fields (EUR TOP800 68% coverage; GBR, DEU too), tagged with the
+field theme "D1 Power Pool Oct'26 2". No concept could bind them, so no card could use them.
+- `concepts.analyst_skill`: past forecasting record (accuracy, consistency, track record, hit rate, average forecast
+  error) only when the text is about analysts / estimators / forecasts / targets. Left out on purpose: identifier
+  fields (`*_analyst`), ranks among a stock's own analysts (`relative_*`: their per-stock average is constant), model
+  accuracy, "readability", and dispersion of targets (that stays `est_dispersion`). The consistency field scores
+  above raw `accuracy1` (a past-return / volatility proxy, per the brief).
+- A nature rule: a forecaster's track record is a `ratio`, even when its description mentions the "horizon date"
+  (it was classed as a date, so it could never bind).
+- `target_price` no longer matches track-record fields (their descriptions mention target prices).
+- Checked on the bundled 27k-field GLB catalog: `analyst_skill` matches nothing, no field changes nature,
+  `target_price` still matches the same 47 fields. The patterns were written from the brief's wording, not anl93's
+  real descriptions: the first EUR dry run must show `{acc}` landing on the consistency field.
+- Knowledge pack: `02_concepts.md` lists it (07 also regenerated: the 1.10.3 zip shipped a copy built before its own
+  "declared dead ends / lessons" sections).
+- Open: the anl93 Power Pool theme's conditions (dates, regions) - not in BRAIN_RULES until its page is uploaded;
+  whether BRAIN allows arithmetic between two VECTOR fields (would allow weighting each analyst's revision by that
+  analyst's own record; HYPOLAB's Gold `vec_*` operators only reduce a vector to one number per stock).
 
 ## 1.10.3: the paste boxes and agent pack v3 (20 Oct, night)
 The "agents" are Claude chats with fixed instructions (Zacc has no API key); every message crosses by hand, and the

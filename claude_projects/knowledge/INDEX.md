@@ -1,6 +1,6 @@
 # Knowledge pack - which file goes to which project
 
-Last rebuilt 2026-10-20 14:15 (upload lists updated for agent pack v3 in 1.10.3; press Rebuild the knowledge pack after installing). Changed then (re-upload these): none.
+Last rebuilt 2026-10-22 15:36 (1.16.0). Changed since the 1.10.3 pack (re-upload these): 02_concepts.md, 06_goals_and_rules.md, 07_dead_ends.md, 08_my_operator_usage.md, 09_brain_rules.md.
 
 | File | Upload to |
 |---|---|

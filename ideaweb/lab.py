@@ -612,8 +612,8 @@ def play_routes(page, go):
         P.save_roll(items, LAB.sandbox)
         LAB.roll = items
         if not items:
-            return go("/play", "Nothing rolled: this region has no field list yet (the Data page comes in phase C3; "
-                               "on the laptop use the cockpit's Data tab).", "warn")
+            return go("/play", "Nothing rolled: this region has no field list yet - download it on the Data page "
+                               "(live mode).", "warn")
         return go("/play", f"Rolled {len(items)} alpha(s). Rolling is free; only Simulate spends simulations.")
 
     async def play_sim(request: Request):

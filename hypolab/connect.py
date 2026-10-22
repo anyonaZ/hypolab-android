@@ -163,7 +163,7 @@ def go_live(region: Optional[str] = None) -> dict:
     print(f"LIVE mode on - the apps will use your BRAIN account, region {st['live_region']}. "
           "Reload any app page that is already open.")
     if "none yet" in _creds_source():
-        print("Note: no credentials saved yet - run connect.login() first, or log in on the cockpit's Setup tab.")
+        print("Note: no credentials saved yet - run connect.login() first, or log in on the Setup page.")
     return st
 
 

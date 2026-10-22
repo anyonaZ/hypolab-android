@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Ideas{% endblock %} · HYPOLAB</title>
+<title>{% block title %}HYPOLAB{% endblock %} · HYPOLAB</title>
 <meta name="theme-color" content="#050d0a">
 <link rel="stylesheet" href="/static/fonts/fonts.css?v={{ version }}">
 <link rel="stylesheet" href="/static/ideas.css?v={{ version }}">
@@ -11,12 +11,12 @@
 </head>
 <body class="{{ platform }}">
 <header class="topbar">
-  <a class="brand" href="/week">HYPOLAB <span>ideas</span></a>
+  <a class="brand" href="/week">HYPOLAB</a>
   <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
   <p class="ver">v{{ version }}</p>
 </header>
 <nav class="rail" aria-label="Sections">
-  <a class="brand" href="/week">HYPOLAB <span>ideas</span></a>
+  <a class="brand" href="/week">HYPOLAB</a>
   {% set here = request.url.path %}
   <a href="/week" class="{{ 'on' if here.startswith('/week') }}">Week <small>{{ nav.week }}</small></a>
   <a href="/leads" class="{{ 'on' if here.startswith('/leads') }}">Leads {% if nav.leads %}<small class="count">{{ nav.leads }}</small>{% endif %}</a>
@@ -36,7 +36,7 @@
   <a href="/setup" class="{{ 'on' if here.startswith('/setup') }}">Setup</a>
   <div class="rail-foot">
     <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
-    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Marimo cockpit (optional now)</a>{% endif %}
+    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Old marimo screens</a>{% endif %}
     <p class="ver">v{{ version }}</p>
   </div>
 </nav>

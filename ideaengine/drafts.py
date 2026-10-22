@@ -535,7 +535,7 @@ def _roles(c: dict, rep: CheckReport) -> None:
         if concept not in CONCEPTS:
             close = difflib.get_close_matches(str(concept), list(CONCEPTS), n=3, cutoff=0.5)
             rep.add("error", where, f"concept {concept!r} does not exist" +
-                    (f" - did you mean {', '.join(close)}?" if close else " - see the concept list on the cockpit's Data tab"))
+                    (f" - did you mean {', '.join(close)}?" if close else " - see the concept list on the Data page"))
         if isinstance(spec, dict) and spec.get("pair_with") and spec["pair_with"] not in roles:
             rep.add("error", where, f"pair_with {spec['pair_with']!r} is not a role of this card")
         if isinstance(spec, dict) and spec.get("type") not in (None, "GROUP"):
@@ -687,7 +687,7 @@ def _dry_run(h: hyp.Hypothesis, catalog, region: str, universe: Optional[str], d
     rep.region, rep.universe, rep.delay = region, universe, delay
     if h.roles and not catalog.has_context(region, universe, delay):
         rep.add("info", "dry run", f"no field list for {region} {universe} D{delay}: download it on the "
-                                   "cockpit's Data tab to see which fields the roles bind to")
+                                   "Data page to see which fields the roles bind to")
     try:
         idea = build_card(h, catalog, region, universe, delay)
     except Exception as e:  # noqa: BLE001
@@ -1076,7 +1076,7 @@ def digest(journal, store, week: str, today: Optional[dt.date] = None, catalog=N
         moves = planner.week_pyramid_moves(journal, catalog, week) if catalog is not None else None
     except Exception:  # noqa: BLE001
         moves = None
-    lines += ["", "pyramid cells that moved this week (from the Account tab download):"]
+    lines += ["", "pyramid cells that moved this week (from the Account page download):"]
     if moves is None:
         lines.append("- not available (no field list / no download)")
     elif moves.empty:
@@ -1316,7 +1316,7 @@ def state_text(journal, store, week: str, tracker=None, catalog=None) -> str:
     mine = [h.id for h in hyp.load_library() if h.source == "mine" and h.id not in seen]
     out += [f"| {cid} | {state} |" for cid, state in rows] + [f"| {cid} | approved |" for cid in mine]
     binned = journal.binned() if journal is not None else pd.DataFrame()
-    out += [f"| {r.hypothesis_id} | binned in the cockpit |" for r in binned.itertuples(index=False)]
+    out += [f"| {r.hypothesis_id} | binned in the Lab |" for r in binned.itertuples(index=False)]
     if not rows and not mine and binned.empty:
         out.append("| - | - |")
     if ev.get("themes") or ev.get("warnings"):

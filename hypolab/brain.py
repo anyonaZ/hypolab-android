@@ -129,7 +129,7 @@ def make_payload(expression: str, region: str = "USA", universe: Optional[str] =
     universe = universe or reg.get("universe") or (None if region in config.REGION_DEFAULTS else "TOP3000")
     if not universe:
         raise ValueError(f"HYPOLAB does not know {region}'s universes yet: press 'Download operators + "
-                         f"simulation options' on the cockpit's Account tab (live mode), then try again.")
+                         f"simulation options' on the Account page (live mode), then try again.")
     return {
         "type": "REGULAR",
         "settings": {
@@ -179,7 +179,7 @@ class BrainClient:
         if p.exists():
             d = json.loads(p.read_text())
             return d["email"], d["password"]
-        print("No saved BRAIN credentials. (Tip: log in on the cockpit's Setup tab or with `python -m hypolab login` "
+        print("No saved BRAIN credentials. (Tip: log in on the Setup page or with `python -m hypolab login` "
               "once, and you will not be asked again.)")
         email = self.input("BRAIN email: ").strip()
         pw = getpass.getpass("BRAIN password: ")
@@ -567,14 +567,14 @@ class BrainClient:
             a = self._get_json(f"/alphas/{alpha_id}")
         except Exception as e2:  # noqa: BLE001
             raise UncertainOutcome(f"{err} Reading the alpha back also failed ({e2}). Open {alpha_id} on the platform: "
-                                   "if it shows as submitted, download your account on the Account tab; if not, run "
+                                   "if it shows as submitted, download your account on the Account page; if not, run "
                                    "the gate again before submitting.") from err
         if a.get("dateSubmitted") or str(a.get("status", "")).upper() == "ACTIVE":
             return {"status_code": 200, "body": "submitted (confirmed by reading the alpha after a lost answer)",
                     "confirmed_after_lost_response": True}
         raise UncertainOutcome(f"{err} BRAIN does not show {alpha_id} as submitted yet; it may still be processing. "
                                "Open it on the platform in a few minutes: if it shows as submitted, download your "
-                               "account on the Account tab; if not, run the gate again before submitting.")
+                               "account on the Account page; if not, run the gate again before submitting.")
 
     # ---------------------------------------------------------- account
     def my_alphas(self, status: Optional[str] = None, region: Optional[str] = None, max_items: int = 2000) -> List[dict]:

@@ -1,4 +1,4 @@
-"""HYPOLAB Ideas: the web app for the idea side (1.7.0).
+"""HYPOLAB's web app (1.7.0 as "Ideas"; since 1.16.0 the main HYPOLAB app on the laptop and the tablet).
 
 Pages: Week (goals, this week's plan, the Friday review), Leads (the learning loop, 1.8.0), Cards (ranked idea cards: read, send to the Lab, copy
 into a draft, bin), Drafts (write or import a card, live checks with a dry-run binding, Critic hand-off, approve to
@@ -274,8 +274,7 @@ async def lead_action(request: Request):
     if action == "lab":
         handoff.send_to_lab(item["hypothesis_id"], item["region"])
         extra = " Flip it only if you can say why the reverse mechanism is true." if item["kind"] == "inverted" else ""
-        return go("/leads", f"{item['hypothesis_id']} sent to the Lab for {item['region']}. In the cockpit's Lab "
-                            f"press \"Pick up the card sent from Ideas\".{extra}")
+        return go("/lab", f"{item['hypothesis_id']} sent to the Lab for {item['region']}.{extra}")
     if action == "draft":
         try:
             if item["kind"] == "sibling":
@@ -499,10 +498,7 @@ async def card_lab(request: Request):
     cid = request.path_params["cid"]
     f = await request.form()
     handoff.send_to_lab(cid, f.get("region") or None)
-    if config.platform() == "android":          # 1.13.0: the Lab is a page here
-        return RedirectResponse("/lab", status_code=303)
-    return go(_back(request), f"{cid} sent to the Lab. Open the Lab page (it picks the card up), or in the marimo "
-                              "cockpit's Lab press \"Pick up the card sent from Ideas\".")
+    return RedirectResponse("/lab", status_code=303)       # 1.16.0: the Lab page picks the card up
 
 
 async def card_bin(request: Request):

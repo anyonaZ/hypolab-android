@@ -94,7 +94,7 @@ def compute_pyramids(refresh: bool = False) -> dict:
             div = R.brain.diversity()
             out["raw"] = div.attrs.get("raw_sample", [])
             base = PyramidTracker(div)
-            out["source"] = "BRAIN, ALL TIME - Genius counts the quarter only: download your account on the Account tab"
+            out["source"] = "BRAIN, ALL TIME - Genius counts the quarter only: download your account on the Account page"
         except Exception as e:  # noqa: BLE001
             out["source"] = f"journal (BRAIN unavailable: {e})"
     base = base or PyramidTracker.from_journal(J)

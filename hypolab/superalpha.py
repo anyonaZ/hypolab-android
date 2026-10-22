@@ -477,7 +477,7 @@ def preview(selection: str, alphas: pd.DataFrame, region: str, delay: int, limit
     """Which of your alphas a selection would keep - before spending a simulation. Live, BRAIN knows properties
     HYPOLAB does not (correlations, long/short counts): then the preview says so instead of guessing."""
     if alphas is None or alphas.empty:
-        return {"ok": False, "note": "no submitted alphas known: download your account (cockpit > Account)",
+        return {"ok": False, "note": "no submitted alphas known: download your account (Account page)",
                 "table": pd.DataFrame()}
     pool = alphas[(alphas["region"] == region) & (alphas["delay"].astype(int) == int(delay))]
     recs = []

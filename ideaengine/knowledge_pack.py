@@ -199,7 +199,7 @@ def goals_and_rules(store=None, journal=None) -> str:
               f"- At most {st['max_submissions_per_day']} alpha submissions a day; it is a ceiling, not a quota. "
               "Combined alpha performance is a Genius bar, so weak filler hurts.",
               f"- SuperAlphas unlock after {st['superalpha_unlock_after']} lifetime submitted alphas; then at most 1 a "
-              "day on top of the alphas. HYPOLAB builds them in the cockpit (SuperAlpha tab) from recipes over pools of "
+              "day on top of the alphas. HYPOLAB builds them on its SuperAlpha page from recipes over pools of "
               "10+ submitted alphas: the projects never write selection or combo code.",
               f"- Trial budget: {st['max_sims_per_idea']} simulations per idea, then rethink. Every try is counted and "
               "the gate deflates the Sharpe by it.",
@@ -261,7 +261,7 @@ def dead_ends(journal=None, min_tries: int = 5) -> str:
                                                       for r in dd.itertuples(index=False)]) if not dd.empty \
         else ["_None declared yet._"]
     lines += ["", "## Lessons (newest first)",
-              "Rules written in the weekly reviews (and your own lessons from the cockpit). Follow them unless a "
+              "Rules written in the weekly reviews (and your own lessons from the Journal page). Follow them unless a "
               "card says why one does not apply.", ""]
     lines += [f"- {'[' + r.week + '] ' if r.week else ''}{r.text}" for r in les.itertuples(index=False)] \
         if not les.empty else ["_No lessons yet._"]
@@ -298,7 +298,7 @@ def my_operator_usage(journal=None) -> str:
             raise LookupError
         summary, by_cat, used, unused = account.operator_audit(journal)
     except Exception:  # noqa: BLE001
-        lines.append("_Not available yet: download your submitted alphas on the cockpit's Account tab, then "
+        lines.append("_Not available yet: download your submitted alphas on the Account page, then "
                      "regenerate this pack._")
         return "\n".join(lines) + "\n"
     lines += [f"Quarter {summary['quarter']}: {summary['regular counted']} regular alphas submitted, "

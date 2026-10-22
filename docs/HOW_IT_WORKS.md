@@ -142,7 +142,7 @@ cumulative PnL and yearly table (no simulation); the Lab draws the best combinat
 - `Researcher.rerun(alpha, variants)` re-simulates a submitted alpha with risk sets or at D0; every try counts
   against `rerun:<alpha_id>` and still has to pass the gate.
 
-## 8. Idea Engine and the marimo apps: `ideaengine/`, `apps/`
+## 8. Idea Engine and the screens: `ideaengine/`, `ideaweb/` (and the old `apps/`)
 HYPOLAB tests ideas; the Idea Engine decides what is worth testing. They meet in two places only:
 - **Your card files** (`~/.hypolab/library/*.yaml`): `load_library()` loads them after the built-in library and
   marks them `source = "mine"`. A clashing id or a broken file is skipped and listed in `hypotheses.LOAD_WARNINGS`.
@@ -150,10 +150,11 @@ HYPOLAB tests ideas; the Idea Engine decides what is worth testing. They meet in
 
 `ideaengine/` today: `store.py` (quarter goals, weekly plans and drafts in `ideas.sqlite`), `planner.py` (ISO weeks, the
 starting plan, pace toward the Expert bars, daily submission cap and SuperAlpha unlock), `drafts.py` (phase 3, see
-section 12), `views.py` (tables for the cockpit), `connection.py` (opens HYPOLAB without ever prompting), and since
+section 12), `views.py` (tables and charts for the pages), `connection.py` (opens HYPOLAB without ever prompting), and since
 1.8.0-1.9.0 the Friday review (section 15), the learning loop (section 16) and the collectors (section 18).
 
-Three marimo apps sit over both packages (run them together with `python -m hypolab cockpit`):
+Since 1.16.0 the screen is **the web app** (`ideaweb/`, section 24), on the laptop and the tablet. The three
+marimo apps below still run on the laptop for comparison (`python -m hypolab cockpit`):
 - `apps/cockpit.py`: Lab, Pyramids, Play, SuperAlpha (1.10.0, section 19), Journal, Account, Data, Setup (1.7.0: Week, Cards and Drafts moved to the Ideas web app, section 14). Setup logs in with `connect.begin_login` / `connect.finish_login`, so a face scan is a link plus a button, never a hidden prompt.
 - `apps/dataset_scan.py`: dataset explore and scan, separate so a long live scan never blocks the cockpit.
 - `apps/quant_basics.py`: the quant-basics course on the practice market.
@@ -237,7 +238,8 @@ one script for live checks and copy buttons). It reuses the same Python: `genera
 - The field list is loaded only when a page needs it (Cards ranking, a draft's dry run); in sandbox mode it builds the
   practice market's catalog in memory.
 - `POST /api/check` returns the checks panel, the YAML and the Critic message for the editor's live check.
-- Start: `python -m hypolab cockpit` (both; `--no-ideas` for marimo only) or `python -m hypolab ideas`.
+- Start: `python -m hypolab web` (since 1.16.0 every page; `ideas` is the old name). `python -m hypolab cockpit` adds
+  the old marimo screens next to it.
 
 ## 15. The Friday review and batch-5 rules (phase 4, 1.8.0)
 - `planner.evidence(journal, store, week, tracker)`: retry list (last PLAN + near misses with tries left), dead ends
@@ -420,6 +422,37 @@ their output is checked only where Zacc pastes it. 1.10.3 makes those boxes lose
 - Measuring the team: `learn._bucket` keeps `daily brief ... via S-...` as "daily brief + outside: ...";
   `learn.critic_calibration` compares the Critic's latest decision per card with NEAR/PASS within the budget (DIGEST).
 - Copy for the Critic adds the week's plan and a NOTE when the dry run ran in another region.
+
+## 23. analyst_skill (1.10.4, 22 Oct)
+A new concept for forecasters' track records (anl93's per-analyst price-target accuracy and consistency, EUR):
+`concepts.analyst_skill`, with a nature rule that keeps such fields numeric when their description mentions a
+"horizon date", and `target_price` taught not to take them. Most are VECTOR fields: a card reduces them with `vec_*`
+(`vec_avg({acc})`) and scales price-unit measures by `close`. See HANDOFF "1.10.4: analyst_skill".
+
+## 24. The web app is HYPOLAB's main screen (1.13.0-1.16.0, 22 Oct)
+The Android track (HANDOFF "Android track") ported every marimo screen to the Starlette app, so one set of pages runs
+on the laptop and, inside an Android app, on the tablet.
+- **Pages** (`ideaweb/templates`): Ideas = Week, Leads, Cards, Drafts (`app.py`); Lab = Lab, Play, Basics
+  (`lab.py`); Records = Journal, Pyramids, SuperAlpha (`records.py`); Account = Data (with the old dataset scan),
+  Account, Setup (`account.py`). Same engine calls as the marimo cells; the idea pages still never simulate.
+- **One Researcher per process** (`lab.LAB`): opened with `ideaengine.connection.open_researcher()` and opened again
+  when the mode or live region changes, after a login or a logout. It holds what the cockpit kept in marimo state:
+  the Lab's results (stable keys, `?focus=`), boost / lower-correlation / gate reports, robustness, PnL panels,
+  the Play roll, Pyramid counts, the SuperAlpha form and results, explore/scan results, messages.
+- **Jobs** (`jobs.py`): every button that simulates or reads BRAIN runs one background job; the page shows a banner and
+  reloads every 3 s; a second job is refused, never queued; a failure is reported, never retried; nothing starts by
+  itself. Submissions still go only through `Researcher.submit()` / `super_submit()`, which hold every check.
+- **Threads**: the journal, the idea store and (since 1.14.0) the catalog open SQLite with `check_same_thread=False`,
+  because a Researcher opened in one thread is used by job threads.
+- **One practice market per process** (`sandbox.market.shared_market`): MockBrain, the Ideas pages' sandbox catalog and
+  Basics share it; its size is the setting `sandbox_stocks` (500 on the laptop, 250 on the tablet).
+- **Charts** are matplotlib PNGs inlined as data URIs (`lab.fig_uri`); tables are `views.html_table`.
+- **Security**: 127.0.0.1 only; `LocalOriginOnly` refuses POSTs from other sites; on Android `LaunchKey` also requires a
+  per-launch secret cookie (other apps on the tablet can reach 127.0.0.1). Fonts are bundled (no Google Fonts).
+- **Android** (`android/`): Kotlin + Chaquopy (Python 3.11, numpy 1.26.2, pandas 2.1.3); `hl_android.start()` sets
+  HYPOLAB_HOME to the app's private files, HYPOLAB_PLATFORM=android, 250 stocks, the secret, and runs uvicorn (h11) on a
+  random port; `MainActivity` shows it in a WebView with a copy / paste / share bridge. The password is never saved
+  on the tablet. GitHub Actions builds the APK, signed with Zacc's key from repository secrets.
 
 ## Files you own
 | File | Contents |

@@ -765,7 +765,7 @@ def source_draft(d: dict, taken: Iterable[str] = ()) -> dict:
     if d["kind"] == "news":
         wo.append("Built from headlines: test a pattern across many firms, never one company's story.")
     if d["kind"] == "dataset":
-        wo.append(f"Read the field descriptions of {ex.get('dataset')} on the cockpit's Data tab first; a scan in the "
+        wo.append(f"Read the field descriptions of {ex.get('dataset')} on the Data page first; a scan in the "
                   "Dataset scan app shows which fields carry information (the gate deflates for every field scanned).")
     c["watch_out"] = wo
     return c

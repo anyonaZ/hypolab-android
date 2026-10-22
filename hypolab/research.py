@@ -317,7 +317,7 @@ class Researcher:
         (or `python -m hypolab live USA`). Pass sandbox=True/False to override it once."""
         use_sandbox = config.sandbox_mode() if sandbox is None else sandbox
         if use_sandbox:
-            print("SANDBOX mode: offline practice market (region SBX). Go live on the cockpit's Setup tab.")
+            print("SANDBOX mode: offline practice market (region SBX). Go live on the Setup page.")
             return cls.sandbox()
         print(f"LIVE mode: your BRAIN account, region {(region or config.live_region()).upper()}.")
         return cls.live(region)

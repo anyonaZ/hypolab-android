@@ -25,10 +25,10 @@ Done. Start working with:
 
     source $VENV/bin/activate
     cd $(pwd)
-    python -m hypolab cockpit        # the Ideas app (127.0.0.1:2719) + the marimo gallery: cockpit, dataset scan,
-                                     # quant basics (127.0.0.1:2718)
+    python -m hypolab web            # HYPOLAB, every page, at http://127.0.0.1:2719
+    python -m hypolab cockpit        # (optional) the old marimo screens next to it, for comparison
 
-Everything starts in SANDBOX mode (offline practice market). To use your BRAIN account, open the cockpit's
-Setup tab: switch to Live and log in there (the face-scan link appears on the page).
+Everything starts in SANDBOX mode (offline practice market). To use your BRAIN account, open the Setup page:
+switch to Live and log in there (the face-scan link appears on the page).
 Upgrading from hypolab 1.0? The old Jupyter kernel can go:  jupyter kernelspec uninstall hypolab
 MSG

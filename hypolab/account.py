@@ -334,7 +334,7 @@ def quarter_pyramids(journal, catalog, year: Optional[int] = None, quarter: Opti
         rows += [{"region": r.region, "delay": key[1], "category": c, "alphas": 1} for c in cats]
     for k, n in unmapped.items():
         notes.append(f"{n} alpha(s) in {k} could not be placed: download {k.split()[0]}'s field list on the "
-                     f"Data tab (or BRAIN gave no Pyramid tags).")
+                     f"Data page (or BRAIN gave no Pyramid tags).")
     if over:
         notes.append(f"{over} alpha(s) touch 3+ data categories and are counted in each here; BRAIN counts an alpha "
                      f"in at most {MAX_PYRAMIDS_PER_ALPHA} Pyramids (BRAIN_RULES P1), so some cells may be overstated.")

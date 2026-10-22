@@ -1,4 +1,5 @@
-"""The hand-off between the Ideas web app and the marimo Lab (1.7.0).
+"""The hand-off from the Cards page to the Lab (1.7.0; since 1.13.0 the web Lab page picks it up, the old marimo
+Lab still can).
 
 The Ideas app (ideaweb/) never simulates and never talks to BRAIN. "Send to the Lab" writes the card id here; the
 cockpit's Lab picks it up at start and on its "Pick up the card sent from Ideas" button. One small JSON file:

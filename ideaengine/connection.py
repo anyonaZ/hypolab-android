@@ -14,7 +14,7 @@ from hypolab import config, connect
 from hypolab.brain import AuthError, _cred_path
 from hypolab.research import Researcher
 
-LOGIN_HELP = ("Log in on the cockpit's Setup tab (it shows the face-scan link and a button), or from a "
+LOGIN_HELP = ("Log in on the Setup page (it shows the face-scan link and a button), or from a "
               "terminal with `python -m hypolab login`, then reload. Pages never wait on a hidden prompt.")
 
 
@@ -43,7 +43,7 @@ def open_researcher(region: Optional[str] = None) -> Tuple[Optional[Researcher],
         except Exception as e:  # noqa: BLE001
             return None, f"Your BRAIN session expired and could not be renewed ({e}). " + LOGIN_HELP
         if res["status"] == "biometric":
-            return None, ("Your BRAIN session expired and BRAIN wants a face scan. Open the **Setup** tab: the "
+            return None, ("Your BRAIN session expired and BRAIN wants a face scan. Open the **Setup** page: the "
                           "link and the *I finished the face scan* button are there.")
     try:
         return Researcher.live(region, login=False, sync=False), ""

@@ -46,6 +46,10 @@ _NATURE_RULES: List[Tuple[str, str]] = [
     ("identifier", r"\b(iso|currency code|country code|ticker|isin|cusip|sedol|identifier|\bid\b|headline|"
                    r"text\b|summary text|url|name of|entity|category of|type of|classification code|"
                    r"sector name|industry name|exchange code|symbol)"),
+    # 1.10.4: a forecaster's track record is a number, even when its description mentions the "horizon date"
+    # (anl93) - before this rule such fields were classed as dates and never bound
+    ("ratio", r"\b(anl\d*|analysts?|estimators?|forecasts?|targets?)\b.{0,60}\b(accura(cy|te)\w*|consistency|"
+              r"track.?record|hit (rate|ratio))"),
     ("date", r"\b(date|dates|timestamp|utc|time of day|day of week|month of year|period end)\b|"
              r"(^|\| )(the )?(fiscal|calendar|reporting) (year|quarter|period)\b|"
              r"(fiscal|reporting) (year|quarter|period) (associated|label|identifier|in the cube|of the event)|"
@@ -224,7 +228,25 @@ CONCEPTS: Dict[str, Concept] = {c.name: c for c in [
                     r"analysts? (count )?revising down", r"analysts? (lowering|cutting)"], [r"\bup\b|rais|upward|upgrad|group"]),
     _c("recommendation", [r"recommendation", r"analyst rating", r"buy/sell rating", r"\brating\b.{0,20}analyst"],
        [r"count|number|detail|date"], note="CHECK DIRECTION: in many vendors 1 = strong buy"),
-    _c("target_price", [r"target price", r"price target"], [r"count|number|date|std"]),
+    _c("target_price", [r"target price", r"price target"],
+       [r"count|number|date|std|accura|consistency|track.?record|(reached|touched)|hit (rate|ratio)|skill"]),
+    # 1.10.4 (B-20261022-1234, anl93): how good an analyst's past forecasts were, not the forecast itself
+    _c("analyst_skill", [r"\b(anl\d*|analysts?|estimators?|brokers?)\b.{0,60}\b(accura(cy|te)\w*|consistency|"
+                         r"track.?record|hit (rate|ratio))",
+                         r"(forecast|target|estimate|prediction|recommendation)s?.{0,30}\b(accura(cy|te)\w*|"
+                         r"consistency|track.?record|hit (rate|ratio))",
+                         r"\b(accura(cy|te)\w*|consistency|track.?record|hit (rate|ratio)) (of|in) (the )?"
+                         r"(analysts?|estimators?|brokers?|forecasts?|targets?|price targets?|estimates?)",
+                         r"(std|standard deviation) of (the )?(difference|error|gap)s? .{0,50}target",
+                         r"(historical|past|average|mean) (forecast|estimate|target) errors?",
+                         r"\b(analysts?|estimators?)\b.{0,30}\b(skill|track.?record|reliability)\b",
+                         r"\b(skill|ability) of (the )?analysts?"],
+       [r"currency|identifier|\bid\b|number of (analysts|estimates|brokers)|model accuracy|accuracy of the model|"
+        r"probability|confidence (level|interval)|among (the )?(other )?analysts|relative to (the )?other analysts|"
+        r"readability"],
+       note="an analyst's past forecasting record (price-target hit rate, consistency, error) - not the forecast; "
+            "often a VECTOR (one value per analyst: reduce with vec_*); raw hit rates track past return and "
+            "volatility, and ranks among a stock's own analysts average to a constant"),
     _c("surprise", [r"surprise", r"actual.{0,30}(minus|vs|versus|relative to).{0,30}(estimate|consensus|forecast|predicted)",
                     r"(earnings|eps|net (profit|income)).{0,40}surprise", r"surprise.{0,40}(earnings|eps|net (profit|income))"],
        [r"date|time|count|revenue|sales|ebitda|dividend"], note="earnings surprise"),

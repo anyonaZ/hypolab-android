@@ -1,6 +1,6 @@
 # Prompt for a new chat: HYPOLAB as a standalone Android app
 
-Copy everything below the line into a new chat, and attach `hypolab-1.10.3.zip` (or newer).
+Copy everything below the line into a new chat, and attach `hypolab-1.10.4.zip` (or newer).
 
 ---
 
@@ -14,7 +14,7 @@ tablet must be able to do the whole loop on its own when I'm away from the lapto
 1. `HANDOFF.md` - where the project stands and the **decisions not to reopen**.
 2. `docs/USER_GUIDE.md` - every capability, page by page. The Android app must offer all of it.
 3. `docs/HOW_IT_WORKS.md` - the architecture; `docs/BRAIN_RULES.md` - BRAIN's rules HYPOLAB follows.
-4. Run `python tests/run_all.py` on the desktop code first: all ~312 tests must pass before anything changes.
+4. Run `python tests/run_all.py` on the desktop code first: all ~330 tests must pass before anything changes.
 
 ## What HYPOLAB is today (so you don't have to guess)
 - Python 3.10+ engine: `hypolab/` (cards, binding to BRAIN fields, linter, BRAIN client, offline sandbox market,

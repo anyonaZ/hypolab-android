@@ -195,7 +195,7 @@ class Linter:
                 res.issues.append(Issue("error", "NOT_ON_YOUR_LIST",
                                         f"'{c.func}' is not in your operator list (operators.pdf)",
                                         "if your account has it, download BRAIN's live operator list "
-                                        "(cockpit, Account tab) and the linter will accept it"))
+                                        "(Account page) and the linter will accept it"))
             else:
                 near = difflib.get_close_matches(c.func, self.reg.names(), n=3, cutoff=0.6)
                 res.issues.append(Issue("error", "UNKNOWN_OPERATOR", f"'{c.func}' is not a known operator",

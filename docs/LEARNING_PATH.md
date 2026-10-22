@@ -14,7 +14,7 @@ Budget: about 1 hour a day. Each week ends with something you *do* in hypolab.
 ---
 
 ## Week 1: what an alpha is, and why most are luck
-- **Do:** the cockpit's Setup tab, then the Quant basics app (`apps/quant_basics.py`). The sandbox has *planted* signals, so you can
+- **Do:** the Setup page, then the Basics page (quant basics). The sandbox has *planted* signals, so you can
   check your judgment against the truth.
 - **Watch:** WorldQuant's **Learn2Quant** series ([worldquant.com/learn2quant](https://www.worldquant.com/learn2quant/)),
   the intro episodes on alphas, Sharpe, turnover and neutralization. The full playlist is on WorldQuant's YouTube channel
@@ -34,7 +34,7 @@ Budget: about 1 hour a day. Each week ends with something you *do* in hypolab.
 ## Week 3: the data (BRAIN's real edge)
 - **Do:** the Dataset scan app (`apps/dataset_scan.py`): scan one Tier-1 dataset (about 40 simulations)
   and compare the fields above the noise bar with what their descriptions say.
-- **Do:** the cockpit's Data tab. Pick one dataset from the Pyramids guide's Tier-1 list and read **every field
+- **Do:** the Data page. Pick one dataset from the Pyramids guide's Tier-1 list and read **every field
   description**. Tick the dataset on the Data tab to see what each field *is*.
 - **Read:** the dataset pages on BRAIN (*Data* tab): coverage, update frequency, description.
 - **Takeaway:** quarterly data needs `ts_backfill` and long windows. Vector fields need `vec_*`. IDs and dates are not signals.
@@ -60,15 +60,15 @@ Budget: about 1 hour a day. Each week ends with something you *do* in hypolab.
   2019), written by WorldQuant people. Chapters on alpha design, turnover, and robustness.
 - **Read:** Kakushadze (2016), *101 Formulaic Alphas* (arXiv:1601.00991). Real WorldQuant alphas. Notice how short
   they are, and that their average pairwise correlation is only about 16%.
-- **Do:** the Ideas app's Cards page → the cockpit's Lab on the sandbox, then **live** with 1–2 ideas a day.
+- **Do:** the Cards page → the Lab page on the sandbox, then **live** with 1–2 ideas a day.
 
 ## Week 6+: the consultant routine
-- **Do:** in the cockpit, the Lab's robustness and gate on anything that passes; the Ideas app's Week page and the cockpit's Pyramids and Journal tabs weekly.
+- **Do:** on the Lab page, robustness and the gate on anything that passes; the Week, Pyramids and Journal pages weekly.
 - **Model to copy:** the [WorldQuant consultant spotlight on Eric Gitau](https://worldquant.com/ideas/consultant-spotlight-eric-gitau)
   (Kenyan BRAIN consultant). His approach is to take ideas from research papers and adapt them to BRAIN's datasets,
   which is exactly the card → binding → ladder loop.
 - **Habit:** one new hypothesis card a week, written by *you* (copy the YAML format). Write the story first, then the formula.
-- **After 100 lifetime alphas:** SuperAlphas unlock. Practise on the cockpit's SuperAlpha tab in the sandbox first
+- **After 100 lifetime alphas:** SuperAlphas unlock. Practise on the SuperAlpha page in the sandbox first
   (*Build a practice pool*), and read why each selection and weighting recipe exists before you use it live.
 
 ---

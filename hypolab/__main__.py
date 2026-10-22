@@ -6,9 +6,11 @@
   sandbox           switch every app back to the offline practice market
   logout            delete saved credentials and session
   options           regions / universes / delays / neutralizations your account can use
-  cockpit           start the Ideas web app (week, leads, cards, drafts: http://127.0.0.1:2719) and the marimo
-                    apps (cockpit Lab, dataset scan, quant basics: http://127.0.0.1:2718) together
-  ideas             start only the Ideas web app
+  web               start HYPOLAB (1.16.0: the main app - every page: Week, Leads, Cards, Drafts, Lab, Play,
+                    Basics, Journal, Pyramids, SuperAlpha, Data, Account, Setup) at http://127.0.0.1:2719
+  ideas             the same as `web` (the old name)
+  cockpit           the OLD screens, kept for comparison: the web app plus the marimo apps (cockpit, dataset
+                    scan, quant basics: http://127.0.0.1:2718). Do live work in one of them at a time.
   collect KIND      read outside sources into the Leads inbox: osap | arxiv | news | datasets | all | list
                     (see `python -m ideaengine.collect --help`; --file SAVED_PAGE reads a page you saved)
 """
@@ -30,7 +32,7 @@ def main(argv=None):
         connect.go_sandbox()
     elif cmd == "logout":
         connect.logout()
-    elif cmd == "ideas":
+    elif cmd in ("web", "ideas"):
         from pathlib import Path
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
         from ideaweb.app import main as ideas_main
@@ -49,8 +51,8 @@ def main(argv=None):
         else:
             ideas = subprocess.Popen([sys.executable, "-m", "ideaweb"], cwd=str(root))
             from ideaengine.handoff import ideas_url
-            print(f"Ideas (Week, Leads, Cards, Drafts): {ideas_url()}")
-            print("Cockpit (Lab, Pyramids, Play, SuperAlpha, Journal, Account, Data, Setup): opening below ...")
+            print(f"HYPOLAB web app (every page): {ideas_url()}")
+            print("Old marimo screens (for comparison; live work in one of the two at a time): opening below ...")
         if not any(a.startswith("--session-ttl") for a in extra):
             # marimo closes an app 120 s after the browser loses its connection (laptop asleep, Wi-Fi blip) and the
             # tab then says "kernel not found". Keep it alive longer (settings.json: session_ttl_seconds).

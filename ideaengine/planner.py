@@ -177,7 +177,7 @@ def submission_summary(status: Dict[str, object]) -> str:
     head = (f"**Today:** {s['submitted_today']}/{s['cap']} alphas submitted ({s['left_today']} left). ")
     if s["superalpha_unlocked"]:
         return head + (f"**SuperAlpha: unlocked** - {s.get('super_today', 0)}/{s.get('super_cap', 1)} today; build it "
-                       "on the cockpit's SuperAlpha tab from pools of 10+ submitted alphas.")
+                       "on the SuperAlpha page from pools of 10+ submitted alphas.")
     fmt = lambda d: d.strftime("%a %d %b") if d else "-"   # noqa: E731
     return (head + f"**SuperAlpha: locked** - {s['lifetime']}/{s['unlock_at']} lifetime alphas, "
             f"{s['to_unlock']} to go. At this week's target ({s['weekly_target']} a week) it unlocks around "
@@ -383,7 +383,7 @@ def friday_checklist(journal, store, week: str) -> List[dict]:
     pack = config.PROJECT_DIR / "claude_projects" / "knowledge" / "INDEX.md"     # 1.10.1: stamped at every rebuild
     pack_ts = pack.stat().st_mtime if pack.exists() else 0
     return [
-        {"step": "Download your account (cockpit › Account)", "done": bool(synced and synced >= t0),
+        {"step": "Download your account (Account page)", "done": bool(synced and synced >= t0),
          "why": "fresh submissions, Pyramid counts and operator usage for the review"},
         {"step": "Update the goal numbers from your Genius page (Week, above)", "done": None,
          "why": "BRAIN's own signals / Pyramids / combined performance"},

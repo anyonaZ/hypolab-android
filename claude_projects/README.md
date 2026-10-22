@@ -28,21 +28,21 @@ import (concept names, operators, the theme's priority datasets, lessons, dead e
 4. Keep the projects private: BRAIN material may be confidential under your consultant agreement.
 
 ## The loops
-1. **Ideas (daily).** Source -> Scout & Writer -> CARD -> Ideas app **Drafts > Import** (pick the dry-run region; it
+1. **Ideas (daily).** Source -> Scout & Writer -> CARD -> HYPOLAB **Drafts > Import** (pick the dry-run region; it
    defaults to this week's plan region) -> HYPOLAB checks and binds it. Errors: back to Scout & Writer with them.
    `checked` and you are unsure: **Copy for the Critic** -> Critic -> VERDICT -> paste it on the draft. `rewrite`:
    give the fixes to Scout & Writer, import the result with **This is a rewrite** ticked. Same tick when Scout & Writer
    finishes a draft HYPOLAB made itself (Leads > Make a draft). Then **Approve** ->
-   **Cards > Send to the Lab** -> rung 1 in the cockpit. Sources: a SOURCE block from **Leads > From outside**, a
+   **Cards > Send to the Lab** -> rung 1 on the Lab page. Sources: a SOURCE block from **Leads > From outside**, a
    BRIEF, a lead, or a paper. Most sources should give no card.
 2. **The daily brief (weekdays).** Import its card the same way (no tick: its id is new every day).
 3. **BRAIN reading (when you read something).** Upload the page to Scout & Writer, say `brief` (or `shortlist` for a
    Data > Datasets listing), keep the useful BRIEFs in `briefs.md`, re-upload it to Scout & Writer and the Critic.
-4. **Friday.** Cockpit > Account download -> Ideas > Week: copy the **DIGEST** into the Weekly Reviewer -> paste its
+4. **Friday.** Account page: download -> Week page: copy the **DIGEST** into the Weekly Reviewer -> paste its
    **PLAN** on the Week page (its lessons and dead ends now reach the knowledge pack and the state doc) -> **Rebuild
    the knowledge pack** (Drafts page) -> re-upload the files INDEX.md lists as changed -> paste the Week page's
    **Text for the HYPOLAB state doc** into the state doc.
-5. **SuperAlphas** (after 100 lifetime alphas): built in the cockpit's SuperAlpha tab from fixed recipes. No chat
+5. **SuperAlphas** (after 100 lifetime alphas): built on HYPOLAB's SuperAlpha page from fixed recipes. No chat
    writes selection or combo code.
 
 ## Measuring whether the team helps

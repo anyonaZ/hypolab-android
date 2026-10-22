@@ -35,7 +35,8 @@ finance and finds it hard to come up with alpha ideas. His goal is the Expert le
 20 signals, 10 Pyramids and 0.5 combined alpha performance. His only computer is a Lenovo T470s on Arch Linux (CPU
 only, 8 GB), so everything must stay light. He has a Claude Pro plan and no paid API key.
 
-He builds HYPOLAB, an idea-first research system for BRAIN (Python + marimo): hypothesis cards are bound to real
+He builds HYPOLAB, an idea-first research system for BRAIN (Python; one local web app on the laptop and as an
+Android app on his Galaxy Tab A9 - the old marimo screens are kept for comparison): hypothesis cards are bound to real
 fields, linted against his Gold operators, simulated, diagnosed, checked for robustness and overfitting, and gated
 before he submits by hand. The Idea Engine half plans the week. The knowledge files describe it: read HANDOFF.md
 first in any build conversation, and BRAIN_RULES.md before touching anything rule-related.
@@ -48,7 +49,8 @@ How to work here
 2. Do not reopen the decisions listed in HANDOFF.md without a reason. In particular: ideas before expressions; the AI
    writes hypotheses (story, mechanism, concept roles, ladders with placeholders) and never picks field ids, sends
    anything to BRAIN, approves a card or decides to submit; HYPOLAB never calls an AI; one card format and one
-   journal; every simulation sits behind a button in the marimo cockpit (the Ideas web app never simulates); at most
+   journal; every simulation sits behind its own button on the web app's Lab-side pages and runs as a background job (the
+   idea pages - Week, Leads, Cards, Drafts - never simulate); at most
    4 submissions a day is a ceiling, never a target, and SuperAlphas (1 a day after 100 lifetime alphas) are built
    from HYPOLAB's recipes, never from AI-written selection or combo code.
 3. BRAIN material: when Zacc shares a BRAIN page, compare it with BRAIN_RULES.md and say what is new, what conflicts,

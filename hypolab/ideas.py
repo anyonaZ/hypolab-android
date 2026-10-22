@@ -492,7 +492,7 @@ def _score(card: IdeaCard, need: Dict[str, float], journal=None, beginner: bool 
                      "risk-set neutralization (CROWDING) early")
     if card.data_universe:
         notes.append(f"fields bound from the {card.region} {card.data_universe} list (no {card.universe} field list "
-                     "yet: download it on the cockpit's Data tab for exact coverage)")
+                     "yet: download it on the Data page for exact coverage)")
     card.score = score
     card.score_notes = notes
 

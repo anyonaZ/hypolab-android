@@ -74,11 +74,11 @@ class TestIdeasApp(unittest.TestCase):
         self.assertIn("lab=IE_INV_BUILD", r.headers["location"])
         self.assertTrue((config.HOME / "library" / "my_cards.yaml").exists())
         self.assertIn("IE_INV_BUILD", [h.id for h in hyp.load_library() if h.source == "mine"])
-        self.c.post("/cards/IE_INV_BUILD/lab", data={"region": "SBX"})
+        r = self.c.post("/cards/IE_INV_BUILD/lab", data={"region": "SBX"})   # 1.16.0: opens the Lab page
         from ideaengine import handoff
-        m = handoff.take_new()
-        self.assertEqual(m["card"], "IE_INV_BUILD")
-        self.assertIsNone(handoff.take_new())               # picked up once
+        self.assertIn("Picked up IE_INV_BUILD", r.text)                    # the Lab took the card ...
+        self.assertEqual(config.settings().get("last_lab_card"), "IE_INV_BUILD")
+        self.assertIsNone(handoff.take_new())               # ... once
 
     def test_approve_refused_with_errors(self):
         r = self.c.post("/drafts/save", data=dict(GOOD, story="", action="approve"), follow_redirects=False)
