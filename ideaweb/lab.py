@@ -80,6 +80,13 @@ class Lab:
         self.roll = None
         self.inbox_note = ""
         self._cards: Dict[tuple, object] = {}
+        # 1.14.0 (phase C2): Pyramids counts, SuperAlpha form / results / gate / message
+        self.pyr = None
+        self.super_form = None
+        self.super_results: List[tuple] = []
+        self.super_focus: Optional[int] = None
+        self.super_gate = None
+        self.super_msg = ""
 
     # ------------------------------------------------------------------ the Researcher
     def researcher(self):

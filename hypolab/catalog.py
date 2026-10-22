@@ -79,7 +79,9 @@ class Catalog:
     def __init__(self, path: Optional[Path] = None):
         config.ensure_home()
         self.path = Path(path) if path else config.HOME / "catalog.sqlite"
-        self.db = sqlite3.connect(str(self.path))
+        # 1.14.0: usable from the web app's job threads, like the journal and the idea store (SQLite serializes
+        # access to one connection; the web Lab runs one job at a time)
+        self.db = sqlite3.connect(str(self.path), check_same_thread=False)
         self.db.executescript(_SCHEMA)
         self._cache: Dict[tuple, pd.DataFrame] = {}
         # 1.4.3: enriched fields and concept matches are kept on disk between restarts (a slow laptop otherwise

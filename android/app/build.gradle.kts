@@ -29,8 +29,8 @@ android {
         applicationId = "ke.zacc.hypolab"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.13.0"
+        versionCode = 5
+        versionName = "1.14.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 

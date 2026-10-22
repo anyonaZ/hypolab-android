@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}SuperAlpha{% endblock %}
+{% block main %}
+<div class="page-head"><h1>SuperAlpha builder</h1></div>
+{% include "_job.html" %}
+<p>A SuperAlpha combines alphas you have already <strong>submitted</strong> in one region and delay: a
+<strong>selection</strong> ranks them and keeps the top ones, a <strong>combo</strong> weights them day by day. BRAIN
+accepts <strong>one a day</strong>, on top of your 4 alphas.</p>
+<div class="flash {{ 'ok' if unlocked else 'warn' }}"><div class="prose">{{ lock_line | md | safe }}</div></div>
+{% if msg_sa %}<div class="flash {{ 'err' if msg_sa.startswith('NOT') else 'ok' }}"><p>{{ msg_sa }}</p></div>{% endif %}
+
+<h2>Your pools</h2>
+{% if pools %}{{ pools | safe }}{% else %}<p class="empty">No submitted alphas known yet.
+  {{ 'Press Build a practice pool below.' if sandbox else 'Download your account on the Account tab.' }}</p>{% endif %}
+{% if sandbox %}<form method="post" action="/superalpha/pool"><fieldset {{ 'disabled' if job }}>
+  <button class="btn">Build a practice pool (sandbox)</button></fieldset></form>{% endif %}
+{% if not R %}<div class="flash warn"><div class="prose">{{ problem | md | safe }}</div><p>Planning and the preview work without a session; simulating needs one.</p></div>{% endif %}
+
+<h2 id="build">Build one</h2>
+<div class="prose">{{ ladder | md | safe }}</div>
+<form method="post" action="/superalpha/check" class="saform">
+  <fieldset {{ 'disabled' if job }}>
+  <div class="row5">
+    <label>Region <select name="region">{% for r in regions %}<option {{ 'selected' if r == v.region }}>{{ r }}</option>{% endfor %}</select></label>
+    <label>Delay <select name="delay">{% for d in delays %}<option value="{{ d }}" {{ 'selected' if d == v.delay }}>D{{ d }}</option>{% endfor %}</select></label>
+    <label>Universe <input name="universe" value="{{ v.universe }}" autocapitalize="characters"></label>
+    <label>Neutralization <select name="neut">{% for n in neuts %}<option {{ 'selected' if n == v.neut }}>{{ n }}</option>{% endfor %}</select></label>
+    <label>Decay <input type="number" name="decay" min="0" max="60" value="{{ v.decay }}"></label>
+    <label>Truncation <input type="number" name="trunc" min="0.01" max="1" step="0.01" value="{{ v.trunc }}"></label>
+    <label>Keep the top <span class="hint">selectionLimit</span><input type="number" name="limit" min="{{ smin }}" max="{{ smax }}" value="{{ v.limit }}"></label>
+    <label>Scores that count <span class="hint">selectionHandling</span><select name="handling">{% for h in handlings %}<option {{ 'selected' if h == v.handling }}>{{ h }}</option>{% endfor %}</select></label>
+    <label>Component activation <select name="activation">
+      <option value="IS" {{ 'selected' if v.activation == 'IS' }}>IS: each alpha's whole history</option>
+      <option value="OS" {{ 'selected' if v.activation == 'OS' }}>OS: only from each alpha's submission</option></select></label>
+  </div>
+  <div class="row3">
+    <label>Selection recipe <select name="sel">{% for k, n in sels %}<option value="{{ k }}" {{ 'selected' if k == v.sel }}>{{ n }}</option>{% endfor %}</select></label>
+    <label>Weighting recipe (combo) <select name="combo">{% for k, n in combos %}<option value="{{ k }}" {{ 'selected' if k == v.combo }}>{{ n }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Or your own selection <span class="hint">leave empty to use the recipe</span>
+    <textarea name="sel_own" rows="2" class="mono expr" spellcheck="false" autocapitalize="off">{{ v.sel_own }}</textarea></label>
+  <label>Or your own combo <span class="hint">leave empty to use the recipe</span>
+    <textarea name="combo_own" rows="3" class="mono expr" spellcheck="false" autocapitalize="off">{{ v.combo_own }}</textarea></label>
+  <div class="actions-row">
+    <button class="btn" name="go" value="check">Check and preview (free)</button>
+    <button class="btn primary" name="go" value="simulate" {{ 'disabled' if not chk.ok or not R }}>Simulate this SuperAlpha (1 simulation)</button>
+  </div>
+  </fieldset>
+</form>
+<p class="hint">Simulate uses what you checked last; change a setting, then press Check again (the server checks again
+before it simulates, and refuses on an error).</p>
+
+<section class="sacheck">
+  {% if chk.why %}<div class="prose">{{ chk.why | md | safe }}</div>{% endif %}
+  <pre class="code">selection: {{ chk.selection }}
+combo:     {{ chk.combo }}</pre>
+  <div class="flash {{ 'ok' if chk.ok and not chk.warn else ('warn' if chk.ok else 'err') }}"><div class="mdout">{{ chk.md | md | safe }}</div></div>
+  <p><strong>Preview on your submitted alphas:</strong> {{ chk.preview }}</p>
+  {% if chk.kept %}<details class="fold"><summary>Which alphas it keeps</summary>{{ chk.kept | safe }}</details>{% endif %}
+</section>
+
+{% if R %}<form method="post" action="/superalpha/restore"><button class="btn small">Restore SuperAlpha results</button></form>{% endif %}
+
+{% if cur %}
+<h2>Results</h2>
+<ol class="results">
+  {% for k, label in results|reverse %}
+  <li class="{{ 'on' if k == cur_key }}"><a href="/superalpha?show={{ k }}"><span class="rid">{{ label }}</span></a></li>
+  {% endfor %}
+</ol>
+<div class="mdout">{{ cur.markdown() | md | safe }}</div>
+{% if sandbox_note %}<p class="hint">Sandbox: {{ sandbox_note }}. Synthetic numbers: practise the steps, don't judge the recipes by them.</p>{% endif %}
+{% if cur.alpha_id %}
+<form method="post" action="/superalpha/gate"><fieldset {{ 'disabled' if job }}><button class="btn">Run the SuperAlpha gate</button></fieldset></form>
+{% endif %}
+{% if gate_md %}
+<div class="mdout gate">{{ gate_md | md | safe }}</div>
+{% if gate_ready and can_submit %}
+<div class="flash warn submitbox"><div>
+  <p><strong>Your decision.</strong> {% if sandbox %}Sandbox: practice submission only.{% else %}This is a real, permanent submission - today's one SuperAlpha.{% endif %}</p>
+  <form method="post" action="/superalpha/submit" class="stack"><fieldset {{ 'disabled' if job }} class="stack">
+    <label>Type <code>SUBMIT {{ cur.alpha_id }}</code> to confirm
+      <input name="confirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SUBMIT {{ cur.alpha_id }}"></label>
+    <button class="btn danger">{{ 'Submit SuperAlpha (sandbox practice)' if sandbox else 'Submit SuperAlpha to BRAIN (permanent)' }}</button></fieldset></form>
+</div></div>
+{% elif gate_ready %}<p class="warnline">READY, but SuperAlphas are locked or today's one is used.</p>{% endif %}
+{% endif %}
+{% endif %}
+
+<details class="fold"><summary>Where these rules come from</summary><div class="prose">{{ sources | md | safe }}</div></details>
+{% endblock %}

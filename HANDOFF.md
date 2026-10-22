@@ -1,12 +1,14 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22: **HYPOLAB 1.13.0 = 1.12.1 + Android phase C1: the Lab, Play and Quant basics as web pages**
-shared by the laptop and the tablet (`ideaweb/lab.py`, templates `lab.html`, `play.html`, `basics.html`). Every
-simulation sits behind its own button and runs as a background job (`ideaweb/jobs.py`: one at a time, never repeated
-by itself, the page reloads until it ends). One practice market per process (`sandbox.market.shared_market`). The
-marimo cockpit still runs on the laptop for the other tabs (Pyramids, SuperAlpha, Journal, Account, Data, Setup:
-phases C2-C3). **357 tests pass.** The code lives in the private repo `anyonaZ/hypolab-android`; GitHub Actions
-builds the signed APK. See "Android track" below.
+State on 2026-10-22: **HYPOLAB 1.14.0 = 1.13.0 + Android phase C2: Journal, Pyramids and SuperAlpha as web
+pages** (`ideaweb/records.py`; templates `journal.html`, `pyramids.html`, `superalpha.html`), shared by the laptop
+and the tablet, plus a threading fix (the field catalog's SQLite connection now works from the web app's job
+threads). 1.13.0 (C1) brought the Lab, Play and Quant basics. The marimo cockpit is still needed on the laptop only
+for Account, Data and Setup (phase C3). **367 tests pass.** Code: private repo `anyonaZ/hypolab-android`; GitHub
+Actions builds the signed APK. See "Android track" below.
+
+Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
+no scipy.
 
 Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
 no scipy.
@@ -321,6 +323,26 @@ Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
 
+## Android track - phase C2 (1.14.0, 22 Oct)
+- `/journal`: the Researcher's journal (sandbox = in-memory practice journal, labelled so; live without a session =
+  the file, read-only). Verdict mix, tries per idea, scoreboard, experiments (region + verdict filters, 30 rows then
+  "Show 50 more"), submissions, lessons (add when writable).
+- `/pyramids`: `compute_pyramids(refresh)` follows the cockpit's order (quarter's submissions from the Account
+  download > BRAIN all-time diversity > journal; sandbox = practice counts). BRAIN is read only by "Refresh counts"
+  (a job); the result is kept in `LAB.pyr` per mode. Heatmap is drawn with categories as rows (`matrix().T`) so it
+  reads on a portrait screen. "Alphas needed per Pyramid" saves `alphas_per_pyramid`. Guide/multiplier order tabs.
+- `/superalpha`: the form is kept in `LAB.super_form`; "Check and preview (free)" runs `SA.check` + `SA.preview`;
+  "Simulate" re-checks on the server and refuses on an error before spending; one SuperAlpha simulation per press
+  (a job). Practice pool (sandbox), restore, the SuperAlpha gate (a job), and submit only through
+  `Researcher.super_submit()` (typed confirmation, 1 a day, unlock at 100 lifetime alphas) - the form appears only
+  under a READY gate while unlocked with today's one unused. Selection/combo come from HYPOLAB's recipes or code you
+  type; nothing AI-written (decision unchanged).
+- **Fix:** `hypolab/catalog.py` opens SQLite with `check_same_thread=False` (as the journal and idea store already
+  did). Without it a Researcher opened in one thread failed every simulation run in a job thread ("SQLite objects
+  created in a thread can only be used in that same thread"); regression in `tests/test_android_c2.py::Threads`.
+- Tests: `tests/test_android_c2.py` (journal page, filters, lessons; Pyramids heatmap, k, refresh job; SuperAlpha
+  free check, an error never simulates, pool > simulate > gate > wrong confirmation refused; nav; the thread fix).
+
 ## Android track - phase C1 (1.13.0, 22 Oct)
 **Decision changed (Zacc approved shared pages on 21 Oct):** the web app is no longer "never simulates". Its idea
 pages (Week, Leads, Cards, Drafts) still never simulate; the new Lab-side pages do, each simulation behind its own
@@ -345,6 +367,9 @@ journal; SQLite copes, but the Lab lists and pending recovery are per process).
 - `render_md` adds the blank line python-markdown needs before a list (engine reports were written for marimo).
   `theme.apply_matplotlib` lists only installed fonts (no findfont warnings). CSS: verdict colours, tables keep words
   whole and scroll sideways, the bottom bar scrolls (7 tabs) and keeps the open tab in view.
+- Build note (22 Oct): `android/app/build.gradle.kts` pins numpy==1.26.2 and pandas==2.1.3 (Chaquopy's prebuilt
+  wheels). Two builds failed when pip fell back to PyPI source (Chaquopy's server briefly unreachable); a plain re-run
+  passed. If "Chaquopy_cannot_compile_native_code" appears again, re-run the workflow before changing anything.
 - Tests: `tests/test_android_c1.py` (Lab flow with a card: simulate, perf, robustness, gate, wrong confirmation
   refused; one job at a time; no simulation without a button; card hand-off; bin; Play roll/sim/to-Lab; rolling is
   free; Quant basics build/try; shared market). Checked at tablet size in a headless browser, not yet on the tablet.

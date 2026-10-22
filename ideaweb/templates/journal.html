@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Journal{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Journal</h1>
+  <p class="muted">{% if sandbox %}Practice journal (sandbox, kept until the app restarts){% elif writable %}Your journal{% else %}Your journal, read-only until you log in{% endif %}</p></div>
+{% include "_job.html" %}
+<p><strong>{{ total }} simulation{{ '' if total == 1 else 's' }} recorded.</strong> If most verdicts are NOISE, choose ideas
+more carefully; if one idea has used its whole budget, stop and write a lesson.</p>
+
+<div class="twocol">
+  <section><h2>Verdict mix</h2>{{ mix | safe }}</section>
+  <section><h2>Tries per idea <span class="hint">(budget {{ budget }})</span></h2>{{ tries | safe }}</section>
+</div>
+
+<h2>Scoreboard by family</h2>
+{{ scoreboard | safe }}
+
+<h2 id="experiments">Experiments</h2>
+<form method="get" action="/journal#experiments" class="filters">
+  <label>Region <select name="region"><option value="all">all</option>{% for r in regions %}<option {{ 'selected' if r == region }}>{{ r }}</option>{% endfor %}</select></label>
+  <fieldset class="checks-row"><legend>Verdicts</legend>
+    {% for v in all_verdicts %}<label class="chk"><input type="checkbox" name="v" value="{{ v }}" {{ 'checked' if v in verdicts }}> {{ v }}</label>{% endfor %}
+  </fieldset>
+  <button class="btn">Show</button>
+</form>
+{{ experiments | safe }}
+{% if more %}<p><a class="btn small" href="/journal?region={{ region }}{% for v in verdicts %}&v={{ v }}{% endfor %}&n={{ n + 50 }}#experiments">Show 50 more</a></p>{% endif %}
+
+<h2>Submissions</h2>
+{{ submissions | safe }}
+
+<h2 id="lessons">Lessons</h2>
+{% if writable %}
+<form method="post" action="/journal/lesson" class="stack">
+  <label>What did this idea teach you? <span class="hint">one or two sentences</span>
+    <textarea name="text" rows="2" data-paste></textarea></label>
+  <label>Idea id <span class="hint">optional, e.g. ANL_EPS_REVISION@USA</span><input name="idea" autocapitalize="characters"></label>
+  <button class="btn">Add lesson</button>
+</form>
+{% else %}<p class="empty">Read-only until you log in.</p>{% endif %}
+{{ lessons | safe }}
+{% endblock %}

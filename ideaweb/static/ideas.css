@@ -338,4 +338,15 @@ ul.links { padding-left: 1.1rem; }
 .hl-v-noise, .hl-v-error, .hl-v-blocked, .hl-v-budget { background: #3a1820; color: var(--red); }
 .mdout h4 { font-size: 1.02rem; margin: 1rem 0 0.4rem; }
 .checks-row label.chk { overflow-wrap: normal; word-break: normal; }
-@media (max-width: 760px) { .checks-row { flex-direction: column; } }
+@media (max-width: 760px) { .plan .checks-row { flex-direction: column; } .filters .checks-row { width: 100%; } }
+
+/* ------------------------------------------------------------------ 1.14.0: Journal, Pyramids, SuperAlpha */
+.twocol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1.5rem; }
+.twocol h2 { margin-top: 1.2rem; }
+.saform fieldset { display: flex; flex-direction: column; gap: 0.8rem; }
+.saform .row5 { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }
+.saform .row3 { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+.actions-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.sacheck { margin: 0.6rem 0 1rem; }
+.sacheck .flash { display: block; }
+@media (max-width: 760px) { .twocol { grid-template-columns: 1fr; gap: 0; } }

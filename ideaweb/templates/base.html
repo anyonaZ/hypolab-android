@@ -26,6 +26,10 @@
   <a href="/lab" class="{{ 'on' if here.startswith('/lab') }}">Lab {% if nav.job %}<small class="count">...</small>{% endif %}</a>
   <a href="/play" class="{{ 'on' if here.startswith('/play') }}">Play</a>
   <a href="/basics" class="{{ 'on' if here.startswith('/basics') }}">Basics</a>
+  <p class="rail-sep">Records</p>
+  <a href="/journal" class="{{ 'on' if here.startswith('/journal') }}">Journal</a>
+  <a href="/pyramids" class="{{ 'on' if here.startswith('/pyramids') }}">Pyramids</a>
+  <a href="/superalpha" class="{{ 'on' if here.startswith('/superalpha') }}">SuperAlpha</a>
   <div class="rail-foot">
     <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
     {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Marimo cockpit (other tabs)</a>{% endif %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Pyramids{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Pyramids</h1>
+  <form method="post" action="/pyramids/refresh"><fieldset {{ 'disabled' if job }}>
+    <button class="btn">Refresh counts{{ '' if sandbox else ' (reads BRAIN, no simulation)' }}</button></fieldset></form></div>
+{% include "_job.html" %}
+<p class="big lead"><strong>{{ summary }}</strong></p>
+<p class="hint">Counts from: {{ source }}.</p>
+
+<form method="post" action="/pyramids/k" class="inline">
+  <label>Alphas needed per Pyramid <span class="hint">check the Pyramids page on BRAIN</span>
+    <input type="number" name="k" min="1" max="50" value="{{ k }}"></label>
+  <button class="btn small">Save</button>
+</form>
+
+{% if notes %}<div class="flash"><p><strong>Cleaned up in BRAIN's counts:</strong> {{ notes | join(' ') }}</p></div>{% endif %}
+
+<img class="chart" src="{{ fig }}" alt="Pyramid grid: alphas per region and category">
+
+{% if totals %}
+<p><strong>Alphas per region (BRAIN's totals).</strong> One alpha counts in every category whose data it uses, so the
+cells above can add up to more than these totals.</p>
+{{ totals | safe }}
+{% endif %}
+
+<h2>Next cells to work on</h2>
+<nav class="tabs" aria-label="Order">
+  <a href="/pyramids?sort=guide" class="{{ 'on' if sort == 'guide' }}">Guide order (tier 1 first, easiest regions)</a>
+  <a href="/pyramids?sort=multiplier" class="{{ 'on' if sort == 'multiplier' }}">Highest multiplier first</a>
+</nav>
+<h3>Delay 1</h3>
+{{ plan1 | safe }}
+<h3>Delay 0</h3>
+{{ plan0 | safe }}
+
+<details class="fold"><summary>Datasets the Pyramids guide recommends</summary>{{ guide | safe }}</details>
+{% if mult %}<details class="fold"><summary>Pyramid theme multipliers (source: {{ mult_src }})</summary>{{ mult | safe }}</details>{% endif %}
+{% if raw %}<details class="fold"><summary>BRAIN's raw Pyramid rows (first 20, for checking)</summary><pre class="code">{{ raw | tojson(indent=2) }}</pre></details>{% endif %}
+{% endblock %}
