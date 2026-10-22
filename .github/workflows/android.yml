@@ -42,7 +42,7 @@ jobs:
         run: |
           f="$RUNNER_TEMP/build.log"
           [ -f "$f" ] || exit 0
-          msg=$( (grep -n -i -A3 "what went wrong\|error:\|exception\|failed" "$f" | head -60; echo ---; tail -40 "$f") | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+          msg=$( (grep -n -i "looking in\|retrying\|chaquo\|connection\|timed out\|warning: \|collecting\|downloading\|using cached" "$f" | head -40; echo ---; grep -n -i -A3 "what went wrong\|error:\|failed" "$f" | head -30; echo ---; tail -40 "$f") | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
           echo "::error title=build::$msg"
       - name: Rename
         run: |
