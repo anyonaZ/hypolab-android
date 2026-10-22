@@ -59,8 +59,10 @@ chaquopy {
     defaultConfig {
         version = "3.11"
         pip {
-            install("numpy")
-            install("pandas")
+            // Pinned to Chaquopy's prebuilt Android wheels (the ones that ran on the tablet in phases A-B).
+            // Unpinned, pip picked numpy 2.4.6 from source on 22 Oct, which cannot be compiled for Android.
+            install("numpy==1.26.2")
+            install("pandas==2.1.3")
             install("pyyaml")
             install("requests")
             install("matplotlib")
