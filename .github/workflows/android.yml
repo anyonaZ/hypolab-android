@@ -36,7 +36,14 @@ jobs:
           HYPOLAB_STORE_PASSWORD: ${{ secrets.HYPOLAB_STORE_PASSWORD }}
         run: |
           set -o pipefail
-          gradle -p android assembleRelease --stacktrace 2>&1 | tee "$RUNNER_TEMP/build.log"
+          # up to 3 tries: Chaquopy's package server (chaquo.com) sometimes times out; a re-run usually passes
+          for i in 1 2 3; do
+            if gradle -p android assembleRelease --stacktrace 2>&1 | tee "$RUNNER_TEMP/build.log"; then exit 0; fi
+            if ! grep -q "chaquo.com\|Chaquopy_cannot_compile_native_code" "$RUNNER_TEMP/build.log"; then exit 1; fi
+            echo "::warning::Try $i failed while fetching Android packages; waiting 60 s and trying again."
+            sleep 60
+          done
+          exit 1
       - name: Report the error as an annotation
         if: failure()
         run: |

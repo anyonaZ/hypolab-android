@@ -59,6 +59,9 @@ chaquopy {
     defaultConfig {
         version = "3.11"
         pip {
+            // chaquo.com (the Android wheels) is sometimes slow from GitHub's runners: wait and retry longer
+            options("--timeout", "90")
+            options("--retries", "10")
             // Pinned to Chaquopy's prebuilt Android wheels (the ones that ran on the tablet in phases A-B).
             // Unpinned, pip picked numpy 2.4.6 from source on 22 Oct, which cannot be compiled for Android.
             install("numpy==1.26.2")
