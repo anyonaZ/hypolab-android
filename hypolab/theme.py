@@ -34,6 +34,13 @@ def apply_matplotlib() -> None:
     """Dark matplotlib defaults matching the apps (call before drawing)."""
     import matplotlib as mpl
     from cycler import cycler
+
+    def _mono_families():
+        """1.13.0: only fonts that exist (a missing first choice made matplotlib log a warning per text item)."""
+        from matplotlib import font_manager
+        have = {f.name for f in font_manager.fontManager.ttflist}
+        fams = [f for f in ("JetBrains Mono", "IBM Plex Mono", "DejaVu Sans Mono") if f in have]
+        return fams + ["monospace"]
     mpl.rcParams.update({
         "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
         "axes.edgecolor": BORDER, "axes.labelcolor": TEXT, "axes.titlecolor": TEXT,
@@ -41,7 +48,7 @@ def apply_matplotlib() -> None:
         "axes.prop_cycle": cycler(color=SERIES),
         "xtick.color": MUTED, "ytick.color": MUTED, "text.color": TEXT,
         "legend.facecolor": SURFACE_2, "legend.edgecolor": BORDER, "legend.labelcolor": TEXT,
-        "font.family": ["JetBrains Mono", "DejaVu Sans Mono", "monospace"], "font.size": 10,
+        "font.family": _mono_families(), "font.size": 10,
         "axes.spines.top": False, "axes.spines.right": False,
         "lines.linewidth": 1.8,
     })

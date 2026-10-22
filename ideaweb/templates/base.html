@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#050d0a">
 <link rel="stylesheet" href="/static/fonts/fonts.css?v={{ version }}">
 <link rel="stylesheet" href="/static/ideas.css?v={{ version }}">
+{% if job %}<meta http-equiv="refresh" content="3">{% endif %}
 </head>
 <body class="{{ platform }}">
 <header class="topbar">
@@ -21,10 +22,13 @@
   <a href="/leads" class="{{ 'on' if here.startswith('/leads') }}">Leads {% if nav.leads %}<small class="count">{{ nav.leads }}</small>{% endif %}</a>
   <a href="/cards" class="{{ 'on' if here.startswith('/cards') }}">Cards</a>
   <a href="/drafts" class="{{ 'on' if here.startswith('/drafts') }}">Drafts {% if nav.drafts_waiting %}<small class="count">{{ nav.drafts_waiting }}</small>{% endif %}</a>
+  <p class="rail-sep">Lab</p>
+  <a href="/lab" class="{{ 'on' if here.startswith('/lab') }}">Lab {% if nav.job %}<small class="count">...</small>{% endif %}</a>
+  <a href="/play" class="{{ 'on' if here.startswith('/play') }}">Play</a>
+  <a href="/basics" class="{{ 'on' if here.startswith('/basics') }}">Basics</a>
   <div class="rail-foot">
     <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
-    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Open the cockpit (Lab)</a>
-    {% else %}<p class="hint">The Lab is on the laptop for now.</p>{% endif %}
+    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Marimo cockpit (other tabs)</a>{% endif %}
     <p class="ver">v{{ version }}</p>
   </div>
 </nav>

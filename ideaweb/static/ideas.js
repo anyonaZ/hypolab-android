@@ -2,6 +2,11 @@
    1.12.0: inside the Android app, window.HypolabAndroid adds Share and Paste buttons and does the copying. */
 (function () {
   var A = window.HypolabAndroid || null;
+  /* 1.13.0: on a small screen the bottom bar scrolls; keep the open page's tab in view */
+  var on = document.querySelector(".rail a.on");
+  if (on && window.matchMedia("(max-width: 760px)").matches && on.scrollIntoView) {
+    try { on.scrollIntoView({ inline: "center", block: "nearest" }); } catch (e) {}
+  }
   function flash(b, word) { var t = b.textContent; b.textContent = word; setTimeout(function () { b.textContent = t; }, 1400); }
 
   if (A) {

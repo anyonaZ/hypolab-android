@@ -40,9 +40,9 @@ class MockBrain:
     is_mock = True
 
     def __init__(self, data: Optional[Data] = None, seed: int = 7):
-        if data is None:
-            from . import config
-            data = make_market(seed=seed, n_stocks=config.sandbox_stocks())
+        if data is None:                     # 1.13.0: one shared market per process (it is read-only)
+            from .sandbox.market import shared_market
+            data = shared_market(seed=seed)
         self.data = data
         self.ev = Evaluator(self.data)
         self._alphas: Dict[str, dict] = {}

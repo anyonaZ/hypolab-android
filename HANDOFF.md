@@ -1,11 +1,15 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22: **HYPOLAB 1.12.0 = 1.11.0 + Android phase B (the Ideas app on the tablet).** The Ideas
-web app runs inside the Android app (uvicorn on 127.0.0.1, random port, per-launch secret) in a full-screen WebView,
-with bundled fonts, a bottom bar on small screens, 48 px touch targets, and Copy / Paste / Share through a small
-Android bridge. The laptop gets the same pages (fonts now local there too; nothing else changes on the desktop). The
-code lives in the private GitHub repo `anyonaZ/hypolab-android`; GitHub Actions builds the APK. **343 tests pass**
-(`python tests/run_all.py`, scipy not needed). See "Android track" below.
+State on 2026-10-22: **HYPOLAB 1.13.0 = 1.12.1 + Android phase C1: the Lab, Play and Quant basics as web pages**
+shared by the laptop and the tablet (`ideaweb/lab.py`, templates `lab.html`, `play.html`, `basics.html`). Every
+simulation sits behind its own button and runs as a background job (`ideaweb/jobs.py`: one at a time, never repeated
+by itself, the page reloads until it ends). One practice market per process (`sandbox.market.shared_market`). The
+marimo cockpit still runs on the laptop for the other tabs (Pyramids, SuperAlpha, Journal, Account, Data, Setup:
+phases C2-C3). **357 tests pass.** The code lives in the private repo `anyonaZ/hypolab-android`; GitHub Actions
+builds the signed APK. See "Android track" below.
+
+Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
+no scipy.
 
 Before that, 1.11.0 (22 Oct): Android phase A (the feasibility spike, passed on the tablet) and no scipy
 (`hypolab/_stats.py`, matched to scipy in `tests/test_stats_noscipy.py`).
@@ -316,6 +320,35 @@ ended. The device had only ~0.9 GB "available" before the run (Android frees oth
 Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
+
+## Android track - phase C1 (1.13.0, 22 Oct)
+**Decision changed (Zacc approved shared pages on 21 Oct):** the web app is no longer "never simulates". Its idea
+pages (Week, Leads, Cards, Drafts) still never simulate; the new Lab-side pages do, each simulation behind its own
+button. On the laptop, do live work in EITHER the marimo cockpit's Lab OR the web Lab at one time (two processes, one
+journal; SQLite copes, but the Lab lists and pending recovery are per process).
+- `ideaweb/jobs.py`: `JOBS.start(title, page, fn)` runs fn in a thread; a second start while one runs is refused
+  (the page says what is running); a failure is reported, never retried; the message shows once on its page.
+  Pages show a banner with a spinner and `<meta refresh 3>` while a job runs, and disable the spend buttons.
+- `ideaweb/lab.py` `LAB` (one per process): opens the Researcher with `ideaengine.connection.open_researcher()`
+  again when the mode or live region changes (a live problem is re-checked at most every 30 s); keeps the Lab results
+  (stable keys, `?focus=<key>`), boost / lower-correlation / gate reports, robustness tables, PnL panels (PNG data
+  URIs), the Play roll and results. Card in the Lab = setting `last_lab_card` (same as the cockpit); `lab_region` in
+  live mode. A card sent from Cards ("Send to the Lab", `lab_inbox.json`) is picked up when /lab opens; on Android
+  "Send to the Lab" goes straight to /lab.
+- Lab routes: /lab, /lab/card, /lab/card/act (remove, bin), /lab/simulate, /lab/results, /lab/follow, /lab/boost,
+  /lab/perf, /lab/corr, /lab/decorr, /lab/robust, /lab/gate, /lab/submit, /lab/restore, /lab/recover. Submit: the
+  form appears only under a READY gate below the daily cap, and every check stays in `Researcher.submit()`
+  (typed `SUBMIT <alpha id>`, freshness, cap). Play: /play, /play/roll (free), /play/sim, /play/tolab. Quant
+  basics: /basics, /basics/build (lessons 1-5), /basics/sweep (6-7), /basics/try (8; lint + backtest).
+- `hypolab/sandbox/market.py` `shared_market(seed, n)`: MockBrain, the Ideas pages' sandbox catalog and Quant
+  basics share one market (read-only) - on the tablet one 250-stock market instead of two or three.
+- `render_md` adds the blank line python-markdown needs before a list (engine reports were written for marimo).
+  `theme.apply_matplotlib` lists only installed fonts (no findfont warnings). CSS: verdict colours, tables keep words
+  whole and scroll sideways, the bottom bar scrolls (7 tabs) and keeps the open tab in view.
+- Tests: `tests/test_android_c1.py` (Lab flow with a card: simulate, perf, robustness, gate, wrong confirmation
+  refused; one job at a time; no simulation without a button; card hand-off; bin; Play roll/sim/to-Lab; rolling is
+  free; Quant basics build/try; shared market). Checked at tablet size in a headless browser, not yet on the tablet.
+- Live mode on the tablet still needs phase D (login); the Lab then shows why and stays in sandbox.
 
 ## Android track - phase B (1.12.0, 22 Oct)
 - `android/app/src/main/python/hl_android.py`: `start(files_dir)` sets HYPOLAB_HOME = <app files>/hypolab,

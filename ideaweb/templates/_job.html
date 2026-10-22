@@ -1,0 +1,10 @@
+{# 1.13.0: the running job (the page reloads itself until it ends) or the message of the one that just ended #}
+{% if job %}
+<div class="flash warn jobline" role="status">
+  <span class="spin" aria-hidden="true"></span>
+  <p><strong>Working on: {{ job.title }}</strong> - {{ job.seconds() }} s so far. This page refreshes by itself; you
+  can switch to other pages meanwhile. Buttons that spend simulations wait until it ends.</p>
+</div>
+{% elif job_done %}
+<div class="flash {{ job_done.kind }}" role="status"><p>{{ job_done.message }}</p></div>
+{% endif %}

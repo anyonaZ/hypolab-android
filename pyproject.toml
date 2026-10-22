@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hypolab"
-version = "1.12.1"
+version = "1.13.0"
 description = "Idea-first alpha research for WorldQuant BRAIN: hypotheses, linting, diagnosis, validation, Pyramids, plus the Idea Engine and a marimo cockpit."
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "pandas>=2.1", "matplotlib>=3.8", "pyyaml>=6.0", "requests>=2.31"]

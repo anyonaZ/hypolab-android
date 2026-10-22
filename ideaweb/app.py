@@ -4,8 +4,11 @@ Pages: Week (goals, this week's plan, the Friday review), Leads (the learning lo
 into a draft, bin), Drafts (write or import a card, live checks with a dry-run binding, Critic hand-off, approve to
 my_cards.yaml). Plain server-rendered pages; the only script is the draft editor's live check and copy buttons.
 
-It never simulates and never talks to BRAIN. Writes: ideas.sqlite (plans, goals, drafts), my_cards.yaml (on
+The idea pages never simulate and never talk to BRAIN. Writes: ideas.sqlite (plans, goals, drafts), my_cards.yaml (on
 approval), the journal's bins and lessons, and lab_inbox.json ("Send to the Lab").
+
+1.13.0 (Android phase C1): the cockpit's Lab, Play and Quant basics are pages here too (``ideaweb/lab.py``), shared by
+the laptop and the tablet. Those pages DO simulate - each simulation behind its own button, as a background job.
 """
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ from hypolab.decorr import crowding_prior
 from hypolab.ideas import generate_ideas
 from ideaengine import drafts as D
 from ideaengine import handoff, learn, planner, sources
+from ideaweb.jobs import JOBS
 from ideaweb.state import state
 
 HERE = Path(__file__).resolve().parent
@@ -41,8 +45,26 @@ BIN_REASONS_CARDS = ["noise - no real signal", "data missing or too thin here", 
                      "duplicate of another card", "crowded - everyone trades it"]
 
 
+_LIST_LINE = re.compile(r"^\s*(?:[-*+]|\d+\.)\s+\S")
+
+
+def _loosen_lists(text: str) -> str:
+    """1.13.0: python-markdown needs a blank line before a list; the engine's reports (written for marimo, which does
+    not) put lists straight under a sentence. Add the blank line outside code blocks."""
+    out, fence, prev = [], False, ""
+    for line in (text or "").split("\n"):
+        if line.lstrip().startswith("```"):
+            fence = not fence
+        if (not fence and _LIST_LINE.match(line) and prev.strip() and not _LIST_LINE.match(prev)
+                and not prev.lstrip().startswith("|")):
+            out.append("")
+        out.append(line)
+        prev = line
+    return "\n".join(out)
+
+
 def render_md(text: str) -> str:
-    return md.markdown(text or "", extensions=["tables", "fenced_code"])
+    return md.markdown(_loosen_lists(text or ""), extensions=["tables", "fenced_code"])
 
 
 templates.env.filters["md"] = render_md
@@ -79,7 +101,8 @@ def page(request: Request, name: str, **ctx):
                msg=request.query_params.get("msg", ""), kind=request.query_params.get("kind", "ok"),
                lab_card=request.query_params.get("lab", ""),
                nav={"drafts_waiting": counts.get("draft", 0) + counts.get("checked", 0),
-                    "week": planner.iso_week(), "leads": n_leads, "sources": _new_sources(st)},
+                    "week": planner.iso_week(), "leads": n_leads, "sources": _new_sources(st),
+                    "job": JOBS.busy() is not None},
                platform=config.platform(),
                # 1.12.0: the tablet has no marimo cockpit (its pages arrive in Android phase C)
                cockpit_url=None if config.platform() == "android" else "http://127.0.0.1:2718",
@@ -476,8 +499,10 @@ async def card_lab(request: Request):
     cid = request.path_params["cid"]
     f = await request.form()
     handoff.send_to_lab(cid, f.get("region") or None)
-    return go(_back(request), f"{cid} sent to the Lab. In the cockpit's Lab press \"Pick up the card sent from "
-                              "Ideas\" (or just open the cockpit).")
+    if config.platform() == "android":          # 1.13.0: the Lab is a page here
+        return RedirectResponse("/lab", status_code=303)
+    return go(_back(request), f"{cid} sent to the Lab. Open the Lab page (it picks the card up), or in the marimo "
+                              "cockpit's Lab press \"Pick up the card sent from Ideas\".")
 
 
 async def card_bin(request: Request):
@@ -727,6 +752,9 @@ routes = [
     Route("/api/check", api_check, methods=["POST"]),
     Mount("/static", StaticFiles(directory=str(HERE / "static")), name="static"),
 ]
+from ideaweb import lab as _lab  # noqa: E402  (1.13.0: Lab, Play, Quant basics)
+
+routes[-1:-1] = _lab.routes(page, go)
 
 class LocalOriginOnly:
     """1.8.1: refuse POSTs that come from another web site. The app listens on 127.0.0.1 only, but any page open in

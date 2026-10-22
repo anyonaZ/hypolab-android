@@ -277,3 +277,65 @@ pre.hidden-copy { display: none; }
   .grid tr:hover td { background: transparent; }
   pre.code { font-size: 0.86rem; }
 }
+
+/* ------------------------------------------------------------------ 1.13.0: Lab, Play, Quant basics */
+.rail-sep { margin: 1rem 0 0.2rem 0.7rem; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.grow { flex: 1 1 14rem; }
+.labcard { margin: 0.4rem 0 0.6rem; }
+.cardacts { margin-top: 0.5rem; }
+.story { font-family: var(--serif); font-size: 1.1rem; line-height: 1.6; max-width: 68ch; }
+.simform { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; }
+.simform fieldset { display: flex; flex-direction: column; gap: 0.8rem; align-items: flex-start; }
+.simform fieldset > label, .simform .row5 { width: 100%; }
+fieldset.inline { display: flex; gap: 0.8rem; align-items: flex-end; flex-wrap: wrap; }
+ol.results, ol.rolls { list-style: none; padding: 0; margin: 0.6rem 0; display: flex; flex-direction: column; gap: 0.35rem; }
+ol.results a { display: flex; flex-wrap: wrap; gap: 0.25rem 0.7rem; align-items: baseline; padding: 0.55rem 0.7rem; border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--rule); color: var(--text); text-decoration: none; }
+ol.results li.on a { border-color: var(--green); box-shadow: inset 3px 0 0 var(--green); }
+ol.results .rid { font-family: var(--mono); font-size: 0.86rem; overflow-wrap: anywhere; }
+ol.results .nums { color: var(--muted); font-size: 0.86rem; margin-left: auto; }
+ol.rolls li { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 0.4rem 0.7rem; }
+.rollpick { align-items: flex-start !important; }
+.rollpick code { overflow-wrap: anywhere; }
+.current { margin-top: 1.4rem; border-top: 1px solid var(--rule); padding-top: 0.6rem; }
+.mdout { max-width: 78ch; }
+.mdout table, .hl-mdtable table { border-collapse: collapse; font-size: 0.88rem; margin: 0.4rem 0; }
+.mdout th, .mdout td, .hl-mdtable th, .hl-mdtable td { border-bottom: 1px solid #13281e; padding: 0.3rem 0.55rem; text-align: left; vertical-align: top; }
+.mdout th, .hl-mdtable th { color: var(--muted); font-weight: 600; border-bottom-color: var(--rule); }
+.hl-mdtable { overflow-x: auto; max-width: 100%; margin: 0.4rem 0 0.8rem; }
+.hl-mdtable td code { overflow-wrap: anywhere; }
+.mdout pre, .mdout code { font-family: var(--mono); }
+.mdout pre { background: #040b08; border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.8rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hl-verdict { font-weight: 700; padding: 0.05rem 0.5rem; border-radius: 4px; }
+.hl-v-ready { background: var(--green); color: var(--green-ink); }
+.hl-v-notready { background: #3a1820; color: var(--red); }
+img.chart { width: 100%; max-width: 56rem; height: auto; border: 1px solid var(--rule); border-radius: 8px; margin: 0.5rem 0; }
+.submitbox .stack { margin-top: 0.4rem; }
+.ticker { font-family: var(--mono); color: var(--green); }
+.scores { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.scores span { background: var(--panel); border: 1px solid var(--rule); border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.88rem; color: var(--muted); }
+.scores b { color: var(--green); }
+ul.links { padding-left: 1.1rem; }
+.jobline { align-items: flex-start; }
+.spin { width: 1rem; height: 1rem; border: 2px solid var(--rule); border-top-color: var(--green); border-radius: 50%;
+  animation: hlspin 0.9s linear infinite; flex: 0 0 auto; margin-top: 0.25rem; }
+@keyframes hlspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+@media (max-width: 760px) {
+  /* seven tabs: the bottom bar scrolls sideways */
+  .rail { overflow-x: auto; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail a { flex: 0 0 auto; min-width: 5.2rem; }
+  .rail-sep { display: none; }
+  ol.results .nums { margin-left: 0; width: 100%; }
+}
+/* tables keep their words whole and scroll sideways instead */
+.hl-mdtable th, .hl-mdtable td, .mdout th, .mdout td { overflow-wrap: normal; word-break: normal; white-space: nowrap; }
+.hl-mdtable td code, .mdout td code { white-space: normal; overflow-wrap: anywhere; min-width: 16rem; display: inline-block; }
+.mdout table { display: block; overflow-x: auto; max-width: 100%; }
+.hl-v-pass, .hl-v-near { background: var(--green); color: var(--green-ink); }
+.hl-v-weak, .hl-v-inverted { background: #2a2346; color: var(--violet); }
+.hl-v-noise, .hl-v-error, .hl-v-blocked, .hl-v-budget { background: #3a1820; color: var(--red); }
+.mdout h4 { font-size: 1.02rem; margin: 1rem 0 0.4rem; }
+.checks-row label.chk { overflow-wrap: normal; word-break: normal; }
+@media (max-width: 760px) { .checks-row { flex-direction: column; } }

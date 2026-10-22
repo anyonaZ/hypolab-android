@@ -179,3 +179,19 @@ def make_market(n_stocks: int = 500, n_days: int = 1512, seed: int = 7, signal_s
     for j in range(40):
         desc[f"nz_{j:03d}"] = f"Synthetic model output #{j} (pure noise - planted for the overfitting lesson)"
     return Data(fields, groups, {"anl_est_eps_vec": vec}, dates=dates, descriptions=desc)
+
+
+_SHARED: dict = {}
+
+
+def shared_market(seed: int = 7, n_stocks: int | None = None) -> Data:
+    """1.13.0: one practice market per process (the Ideas pages, the Lab, Play and Quant basics share it; the data is
+    never changed after it is built). Keeps only the latest (seed, size): a 500-stock market is ~0.6 GB."""
+    if n_stocks is None:
+        from .. import config
+        n_stocks = config.sandbox_stocks()
+    key = (int(seed), int(n_stocks))
+    if key not in _SHARED:
+        _SHARED.clear()
+        _SHARED[key] = make_market(n_stocks=key[1], seed=key[0])
+    return _SHARED[key]

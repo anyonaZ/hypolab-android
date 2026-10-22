@@ -3,4 +3,4 @@
 Hypothesis -> data binding -> lint -> simulate -> diagnose -> robustness -> gate -> submit,
 with a journal that remembers every try and a planner for the Pyramids.
 """
-__version__ = "1.12.1"
+__version__ = "1.13.0"

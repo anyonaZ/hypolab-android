@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Lab{% endblock %}
+{% block main %}
+<div class="page-head">
+  <h1>Lab</h1>
+  <p class="muted">{% if sandbox %}<span class="tag" style="color:#7fe3ff">Sandbox</span> practice market (SBX) - nothing here touches BRAIN{% else %}<span class="tag ok">Live</span> your BRAIN account{% endif %}</p>
+</div>
+{% include "_job.html" %}
+
+{% if not R %}
+<div class="flash err"><div class="prose">{{ problem | md | safe }}</div></div>
+{% if platform == 'android' %}<p class="hint">Logging in to BRAIN from the tablet comes in phase D. Until then switch to sandbox
+mode on the laptop's Setup tab, or practise here in sandbox mode.</p>{% endif %}
+{% else %}
+
+{% if pending %}
+<div class="flash warn"><div>
+  <p><strong>{{ pending|length }} simulation(s) were still running when HYPOLAB last closed.</strong> BRAIN finished them
+  (and counted them), so collect the results instead of paying again.</p>
+  <form method="post" action="/lab/recover"><fieldset {{ 'disabled' if job }}><button class="btn primary small">Fetch them from BRAIN (no new simulation)</button></fieldset></form>
+</div></div>
+{% endif %}
+{% if restorable %}
+<div class="flash"><p><strong>Pick up where you left off:</strong> {{ restorable }} simulation(s) in your journal, the last on
+  {{ restore_last }} (UTC). Restoring brings back their diagnoses without simulating anything.</p>
+  <form method="post" action="/lab/restore"><button class="btn small">Restore results</button></form></div>
+{% endif %}
+{% if inbox_note %}<div class="flash"><p>{{ inbox_note }}</p></div>{% endif %}
+
+<section class="labcard">
+  <form method="post" action="/lab/card" class="inline">
+    <label class="grow">Idea card
+      <select name="card">
+        <option value="" {{ 'selected' if not card_id }}>(no card: write your own expression)</option>
+        {% for cid in card_ids %}<option value="{{ cid }}" {{ 'selected' if cid == card_id }}>{{ cid }}</option>{% endfor %}
+      </select></label>
+    <label>Region
+      <select name="region">{% for r in regions %}<option {{ 'selected' if r == region }}>{{ r }}</option>{% endfor %}</select></label>
+    <button class="btn">Use</button>
+  </form>
+  {% if card %}
+  <form method="post" action="/lab/card/act" class="inline cardacts">
+    <button class="btn small" name="action" value="remove">Remove card from the Lab</button>
+    <button class="btn small danger" name="action" value="bin">Bin card (noise)</button>
+  </form>
+  {% endif %}
+  <p class="hint">Cards are chosen on the <a href="/cards">Cards</a> page; "Send to the Lab" there lands here.
+  {% if quota %}BRAIN quota today: <strong>{{ '{:,}'.format(quota.remaining) }}</strong> of {{ '{:,}'.format(quota.limit) }} left.{% endif %}
+  Simulations counted today: {{ sims_today }}.</p>
+</section>
+
+{% if card_error %}<div class="flash err"><p>{{ card_error }}</p></div>{% endif %}
+
+<section>
+  {% if card %}
+  {% set h = card.hypothesis %}
+  <h2>{{ h.title }}</h2>
+  <p class="story">{{ h.story }}</p>
+  <p><em>Why it can persist:</em> {{ h.why_persists }} <strong>Expected sign:</strong> {{ h.sign }}</p>
+  <table class="grid tight">
+    <thead><tr><th>Rung</th><th>Expression</th><th>Linter</th><th>IS test</th><th class="wrap">Teaches</th></tr></thead>
+    <tbody>{% for r in ladder %}<tr><td>{{ r.rung }}</td><td><code>{{ r.expression }}</code></td>
+      <td><span class="tag {{ 'ok' if r.lint == 'ok' else 'err' }}">{{ r.lint }}</span></td><td>{{ r.is_test }}</td>
+      <td class="wrap">{{ r.teaches }}</td></tr>{% endfor %}</tbody>
+  </table>
+  {% else %}
+  <p><strong>No card in the Lab.</strong> Pick one above, or test your own expression: it is linted, budgeted and
+  journaled as <code>manual@{{ region }}</code>.</p>
+  {% endif %}
+
+  <form method="post" action="/lab/simulate" class="simform">
+    <fieldset {{ 'disabled' if job }}>
+    <div class="row5">
+      {% if controls.rungs %}<label>Rung <select name="rung">{% for i, n in controls.rungs %}<option value="{{ i }}">{{ n }}</option>{% endfor %}</select></label>{% endif %}
+      <label>Delay <select name="delay">{% for d in controls.delays %}<option value="{{ d }}" {{ 'selected' if d == controls.delay }}>D{{ d }}</option>{% endfor %}</select></label>
+      <label>Decay <input type="number" name="decay" min="0" max="60" step="1" value="{{ controls.decay }}"></label>
+      <label>Neutralization <select name="neutralization">{% for n in controls.neuts %}<option {{ 'selected' if n == controls.neut }}>{{ n }}</option>{% endfor %}</select></label>
+      <label>Truncation <input type="number" name="truncation" min="0.01" max="1" step="0.01" value="{{ controls.trunc }}"></label>
+    </div>
+    <label>{% if card %}Or your own expression (leave empty to use the rung; still linted, budgeted and counted against this idea){% else %}Your expression (linted before it costs a simulation){% endif %}
+      <textarea name="expression" rows="3" class="mono expr" spellcheck="false" autocapitalize="off"></textarea></label>
+    <button class="btn primary">Simulate (1 simulation)</button>
+    </fieldset>
+  </form>
+</section>
+
+<section>
+  <h2>Results this session</h2>
+  {% if rows %}
+  <ol class="results">
+    {% for r in rows|reverse %}
+    <li class="{{ 'on' if r.on }}"><a href="/lab?focus={{ r.key }}">
+      <span class="tag {{ r.kind }}">{{ r.verdict }}</span>
+      <span class="rid">{{ r.idea }} / {{ r.rung }}</span>
+      <span class="nums">Sharpe {{ r.sharpe if r.sharpe is not none else '-' }} · fitness {{ r.fitness if r.fitness is not none else '-' }} · turnover {{ r.turnover if r.turnover is not none else '-' }}{% if r.cached %} · from journal{% endif %}</span>
+    </a></li>
+    {% endfor %}
+  </ol>
+  <form method="post" action="/lab/results" class="inline">
+    <button class="btn small" name="action" value="remove">Remove the shown result from this list</button>
+    <button class="btn small" name="action" value="clear">Clear the list</button>
+  </form>
+  {% else %}<p class="empty">Nothing simulated yet in this session.</p>{% endif %}
+</section>
+
+{% if cur %}
+<section class="current">
+  <div class="mdout">{{ cur.markdown() | md | safe }}</div>
+
+  {% if cur.alpha_id %}
+  <h2>Performance</h2>
+  {% if perf %}
+    {% if perf.error %}<div class="flash warn"><p>{{ perf.error }}</p></div>
+    {% else %}
+      {% if perf._uri %}<img class="chart" src="{{ perf._uri }}" alt="Cumulative PnL">{% else %}<p class="empty">BRAIN returned no PnL for this alpha.</p>{% endif %}
+      {{ perf._yearly | safe }}
+    {% endif %}
+  {% else %}
+  <form method="post" action="/lab/perf"><fieldset {{ 'disabled' if job }}><button class="btn">Show its performance (PnL chart + yearly table, no simulation)</button></fieldset></form>
+  {% endif %}
+  {% endif %}
+
+  <details class="fold" {{ 'open' if actions }}>
+    <summary>Follow ONE suggested action</summary>
+    {% if actions %}
+    <form method="post" action="/lab/follow" class="inline"><fieldset {{ 'disabled' if job }} class="inline">
+      <label class="grow">Suggested action <select name="action">{% for label, i in actions.items() %}<option value="{{ i }}">{{ label }}</option>{% endfor %}</select></label>
+      <button class="btn">Apply it (1 simulation)</button></fieldset></form>
+    {% else %}<p class="empty">No automatic action for this result.</p>{% endif %}
+  </details>
+
+  <details class="fold" {{ 'open' if boost_md or boost_err }}>
+    <summary>Boost a weak-but-real alpha with an independent second signal</summary>
+    <p class="hint">Predicted combined Sharpe = (S1 + S2) / sqrt(2 x (1 + correlation)). Every combination counts as a try on this idea.</p>
+    <form method="post" action="/lab/boost" class="inline"><fieldset {{ 'disabled' if job }} class="inline">
+      <label>Boosters to try <input type="number" name="k" min="1" max="8" value="4"></label>
+      <label>Combine <select name="mode"><option value="add">add: rank(a) + rank(b)</option><option value="and">and: min(rank(a), rank(b))</option></select></label>
+      <button class="btn">Boost (up to 2 x k simulations)</button></fieldset></form>
+    {% if boost_err %}<div class="flash warn"><p>{{ boost_err }}</p></div>{% endif %}
+    {% if boost_md %}<div class="mdout">{{ boost_md | md | safe }}</div>{{ boost_table | safe }}
+      {% if boost_links %}<p class="hint">Open a boosted alpha:</p><ul class="links">{% for k, who, s, v in boost_links %}<li><a href="/lab?focus={{ k }}">{{ who }}</a> - Sharpe {{ s if s is not none else '-' }} {{ v }}</li>{% endfor %}</ul>{% endif %}
+    {% endif %}
+  </details>
+
+  {% if cur.alpha_id %}
+  <h2>Correlation</h2>
+  {% if corr_err %}<div class="flash warn"><p>Could not read it: {{ corr_err }}</p></div>
+  {% elif corr_line %}<div class="flash {{ 'warn' if corr_bad else 'ok' }}"><p><strong>{{ corr_line }}</strong>{% if corr_bad %}<br>Above the limit: try <strong>Lower correlation</strong> below - it keeps the idea and changes one thing at a time.{% endif %}</p></div>
+  {% else %}<p class="muted">Production correlation not read yet. Reading it is free; do it on anything at NEAR or PASS before you spend more simulations on it.</p>{% endif %}
+  <form method="post" action="/lab/corr"><fieldset {{ 'disabled' if job }}><button class="btn">Read production correlation (free, no simulation)</button></fieldset></form>
+  <details class="fold" {{ 'open' if decorr_md or decorr_err }}>
+    <summary>Lower correlation, keep the signal</summary>
+    <p class="hint">Tries up to k principled changes, in BRAIN's order: the risk set a BRAIN theme names, removing the crowded style
+    the alpha resembles, an equivalent field with fewer alphas, a CROWDING/SLOW risk set, a shorter horizon, removing overlap
+    with your own alpha, another peer group. Each is simulated (a try on this idea), its production correlation is read, and
+    the one that keeps the most Sharpe under the limit is recommended.</p>
+    <form method="post" action="/lab/decorr" class="inline"><fieldset {{ 'disabled' if job }} class="inline">
+      <label>Changes to try <input type="number" name="k" min="1" max="6" value="4"></label>
+      <button class="btn">Lower correlation (up to k simulations)</button></fieldset></form>
+    {% if decorr_err %}<div class="flash warn"><p>{{ decorr_err }}</p></div>{% endif %}
+    {% if decorr_md %}<div class="mdout">{{ decorr_md | md | safe }}</div>{{ decorr_table | safe }}{% endif %}
+  </details>
+
+  <h2>Validate before you submit</h2>
+  <form method="post" action="/lab/robust" class="inline"><fieldset {{ 'disabled' if job }} class="inline">
+    <button class="btn" formaction="/lab/robust">Run the robustness battery (about 7 simulations)</button>
+    <button class="btn" formaction="/lab/gate">Gate report</button></fieldset></form>
+  {% if robust_line %}<p><strong>Robustness:</strong> {{ robust_line }}</p>{{ robust_table | safe }}{% endif %}
+  {% if gate_md %}
+  <div class="mdout gate">{{ gate_md | md | safe }}</div>
+  {% if gate_ready %}
+  <div class="flash warn submitbox"><div>
+    <p><strong>Submitted today: {{ subs_today }}/{{ subs_cap }}.</strong> {% if not submit_open %}Daily limit reached - keep this one for tomorrow.{% endif %}</p>
+    <p><strong>Your decision.</strong> {% if sandbox %}Sandbox: practice submission only.{% else %}This is a real, permanent submission. One alpha per idea family per region is usually right.{% endif %}</p>
+    {% if submit_open %}
+    <form method="post" action="/lab/submit" class="stack"><fieldset {{ 'disabled' if job }} class="stack">
+      <label>Type <code>SUBMIT {{ cur.alpha_id }}</code> to confirm
+        <input name="confirm" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SUBMIT {{ cur.alpha_id }}"></label>
+      <button class="btn danger">{{ 'Submit (sandbox practice)' if sandbox else 'Submit to BRAIN (permanent)' }}</button></fieldset></form>
+    {% endif %}
+  </div></div>
+  {% endif %}
+  {% endif %}
+  {% for m in submitted %}<div class="flash {{ 'err' if m.startswith('NOT') else 'ok' }}"><p><code>{{ cur.alpha_id }}</code>: {{ m }}</p></div>{% endfor %}
+  {% endif %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

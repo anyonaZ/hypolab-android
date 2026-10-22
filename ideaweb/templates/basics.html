@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Quant basics{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Quant basics, hands-on</h1></div>
+{% include "_job.html" %}
+<div class="prose lead-in">
+<p>A synthetic market with <strong>known truths</strong> (value, quality, analyst revisions, earnings drift, reversal,
+sentiment) plus <strong>40 pure-noise fields</strong> (<code>nz_000</code> ... <code>nz_039</code>). Everything runs on
+this device, offline; no BRAIN account needed.</p>
+<p>By the end you will understand what an alpha is, what each operator does to the numbers, neutralization, Sharpe /
+turnover / returns / fitness, why the 12.5% turnover floor matters, and - most importantly - <strong>how brute-force
+searching produces impressive-looking garbage</strong>.</p>
+</div>
+
+{% if not b %}
+<form method="post" action="/basics/build"><fieldset {{ 'disabled' if job }}>
+  <button class="btn primary">Build the lessons ({{ stocks }}-stock practice market; under a minute)</button></fieldset></form>
+{% else %}
+<p class="muted"><strong>{{ b.size }}.</strong> Some of them:</p>
+<details class="fold"><summary>The fields</summary>{{ b.fields | safe }}</details>
+
+<h2>1. An alpha is a vector of weights, every day</h2>
+<p>BRAIN evaluates your expression for every stock each day. Positive values are <strong>bought</strong>, negative values are
+<strong>sold short</strong>, and the platform scales everything to a fixed book. <code>rank(x)</code> turns any number into its
+position in the cross-section (0 = lowest, 1 = highest); after neutralization the lowest ranks become shorts. Below: the
+five stocks <code>rank(-ts_sum(returns, 5))</code> likes least - last week's biggest winners.</p>
+{{ b.l1 | safe }}
+
+<h2>2. Know the distribution each operator produces</h2>
+<p><code>rank</code> gives uniform 0..1. <code>zscore</code> gives mean 0, sd 1, and <strong>tails survive</strong>.
+<code>ts_rank</code> is the position within the stock's own history. Multiplying a 0..1 rank by an unbounded quantity lets the
+unbounded one dominate. <code>winsorize</code> clips the tails.</p>
+<img class="chart" src="{{ b.l2_fig }}" alt="Distributions of four expressions">
+{{ b.l2 | safe }}
+
+<h2>3. The four numbers BRAIN judges</h2>
+<ul class="prose">
+<li><strong>Sharpe</strong> = mean daily PnL / std daily PnL x sqrt(252): consistency of profits.</li>
+<li><strong>Turnover</strong> = share of the book traded per day.</li>
+<li><strong>Returns</strong> = annualised PnL / half the book.</li>
+<li><strong>Fitness</strong> = Sharpe x sqrt(|Returns| / max(Turnover, 0.125)).</li>
+</ul>
+<p>Below <strong>12.5% turnover the divisor stops shrinking</strong>: smoothing a slow signal further cannot raise fitness;
+it only lowers returns. Above 12.5%, cutting turnover raises fitness directly. For the <strong>fast</strong> signal below,
+decay cuts turnover and lifts fitness; for the <strong>slow</strong> one it does nothing useful. The Lab's diagnosis applies
+exactly this rule.</p>
+{{ b.l3 | safe }}
+
+<h2>4. Neutralization: compare with peers, not with the market</h2>
+<p>Without neutralization an alpha can just be a bet on one sector. <code>group_rank(x, subindustry)</code> and the
+neutralization setting remove those common bets, so only stock-specific skill remains.</p>
+{{ b.l4 | safe }}
+
+<h2>5. Ideas with a mechanism - and the ladder</h2>
+<p>Each planted truth matches an idea card. Notice <strong>revision breadth</strong>: rung 1 has a good Sharpe but fails
+fitness (too much turnover); rung 2 (a month of smoothing - an economic choice, analysts update monthly) passes. That is
+climbing the ladder, not parameter fishing.</p>
+{{ b.l5 | safe }}
+<img class="chart" src="{{ b.l5_fig }}" alt="Cumulative PnL of three ideas">
+
+<h2>6. THE lesson: brute force manufactures luck</h2>
+<p>This is what template-sweep notebooks do: many templates x many fields, keep the best. We run it on the <strong>40 noise
+fields that predict NOTHING</strong>.</p>
+{% if not sweep %}
+<form method="post" action="/basics/sweep"><fieldset {{ 'disabled' if job }}>
+  <button class="btn">Run the brute-force sweep on 40 noise fields (a few minutes on the tablet)</button></fieldset></form>
+{% else %}
+{{ sweep.top | safe }}
+<p><strong>Best of {{ sweep.n }} noise alphas: {{ sweep.best }}.</strong> How good the best one looks from pure luck, by number of tries:</p>
+{{ sweep.noise | safe }}
+<p>The best noise alpha looks like a real signal. Its <em>test-period</em> Sharpe usually collapses, and the <strong>deflated
+Sharpe</strong> (which accounts for how many things you tried) says it is luck:</p>
+{{ sweep.dsr | safe }}
+<p><strong>Volume itself is not the problem.</strong> BRAIN expects 1000+ simulations - that is how you learn the data. The
+problem is <em>picking the best of many variants of one idea</em> and believing it. Simulate a lot <strong>across</strong>
+ideas and datasets, stay disciplined <strong>within</strong> one idea (a ladder of 2-4 rungs, about 10 tries), and let the
+journal count every try so the gate can deflate the Sharpe honestly.</p>
+
+<h2>7. Robustness tests (WorldQuant's own checklist)</h2>
+<p>A real signal survives <code>rank()</code>, a binary version, winsorizing and small window changes. A lucky one often does not.</p>
+{{ sweep.robust | safe }}
+{% endif %}
+{% endif %}
+
+<h2 id="try">8. Try operators yourself</h2>
+<p>The linter tells you about mistakes before anything is evaluated, exactly as it does before a real simulation.</p>
+<form method="post" action="/basics/try" class="stack"><fieldset {{ 'disabled' if job }} class="stack">
+  <label>Your expression (practice market fields)
+    <textarea name="expression" rows="3" class="mono expr" spellcheck="false" autocapitalize="off">{{ mine.expr if mine else 'group_rank(ts_delta(ts_backfill(anl_est_eps, 63), 63) / close, subindustry)' }}</textarea></label>
+  <label>Decay <input type="number" name="decay" min="0" max="30" value="{{ mine.decay if mine else 3 }}"></label>
+  <button class="btn">Lint and backtest</button></fieldset></form>
+{% if mine %}
+<pre class="code">{{ mine.lint }}</pre>
+{% if mine.error %}<div class="flash err"><p>{{ mine.error }}</p></div>{% endif %}
+{{ mine.table | safe }}
+{% endif %}
+{% endblock %}

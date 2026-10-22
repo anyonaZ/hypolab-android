@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Play{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Play</h1></div>
+{% include "_job.html" %}
+{% if not R %}
+<div class="flash err"><div class="prose">{{ problem | md | safe }}</div></div>
+{% else %}
+<p class="ticker">&gt; wake up, Zacc ... the market has patterns nobody has tried. Roll some dice.</p>
+<p>No Pyramids, no plan, no ranking: <strong>random idea cards</strong> (built-in or yours, any family) and <strong>wild
+rolls</strong> (a random field from a random dataset dropped into a random template - two fields always come from the same
+dataset, so the alpha stays <em>single dataset</em>). Rolling is free; only <strong>Simulate</strong> spends
+simulations{{ '.' if sandbox else ' from your BRAIN quota.' }}</p>
+<p class="scores">
+  <span>dice thrown <b>{{ stats.plays }}</b></span><span>today <b>{{ stats.today }}</b></span>
+  <span>PASS <b>{{ stats.pass }}</b></span><span>NEAR <b>{{ stats.near }}</b></span>
+  <span>best Sharpe <b>{{ '%.2f'|format(stats.best_sharpe) if stats.best_sharpe is not none else '-' }}</b></span>
+</p>
+
+<form method="post" action="/play/roll" class="plan">
+  <fieldset class="checks-row wide"><legend>Dice</legend>
+    <label class="chk"><input type="radio" name="mode" value="mix" checked> Mix</label>
+    <label class="chk"><input type="radio" name="mode" value="cards"> Random idea cards</label>
+    <label class="chk"><input type="radio" name="mode" value="wild"> Wild: random field x random template</label>
+  </fieldset>
+  <label>Region <select name="region">{% for r in regions %}<option {{ 'selected' if r == region }}>{{ r }}</option>{% endfor %}</select></label>
+  <label>How many <input type="number" name="n" min="1" max="10" value="4"></label>
+  <label>Seed (0 = surprise me) <input type="number" name="seed" min="0" max="999999" value="0"></label>
+  <label class="chk"><input type="checkbox" name="shuffle" value="1" checked> Shuffle settings too (decay, neutralization, truncation)</label>
+  <button class="btn">Roll the dice (free)</button>
+</form>
+
+{% if roll %}
+<h2>Rolled alphas</h2>
+<form method="post" action="/play/sim">
+  <fieldset {{ 'disabled' if job }}>
+  <p class="hint">Tick some to simulate only those, or none to simulate them all.</p>
+  <ol class="rolls">
+    {% for r in roll %}
+    <li><label class="chk rollpick"><input type="checkbox" name="pick" value="{{ r.i }}">
+      <span><span class="tag {{ 'ok' if r.linter == 'ok' else 'err' }}">{{ r.linter }}</span> <strong>{{ r.source }}</strong> - {{ r.rolled }}<br>
+      <code>{{ r.expression }}</code><br><span class="hint">{{ r.settings }} · IS test: {{ r['IS test'] }} · idea {{ r.idea }}</span></span></label></li>
+    {% endfor %}
+  </ol>
+  <button class="btn primary">Simulate (all rolled, or only the ticked ones)</button>
+  </fieldset>
+</form>
+{% endif %}
+
+{% if rows %}
+<h2>Results</h2>
+<ol class="results">
+  {% for r in rows|reverse %}
+  <li class="{{ 'on' if r.on }}"><a href="/play?show={{ r.key }}">
+    <span class="tag {{ r.kind }}">{{ r.verdict }}</span>
+    <span class="rid">{{ r.idea }} / {{ r.rung }}</span>
+    <span class="nums">Sharpe {{ r.sharpe if r.sharpe is not none else '-' }} · fitness {{ r.fitness if r.fitness is not none else '-' }}</span>
+  </a></li>
+  {% endfor %}
+</ol>
+{% if sel %}
+<div class="mdout">{{ sel.markdown() | md | safe }}</div>
+<form method="post" action="/play/tolab"><input type="hidden" name="key" value="{{ sel_key }}">
+  <button class="btn">Send this one to the Lab (robustness, gate, submit)</button></form>
+{% endif %}
+{% endif %}
+
+<details class="fold"><summary>Why the dice still count</summary>
+<p>Random search finds luck as easily as signal: try 40 noise fields and one will look good. So every roll is journaled as
+a try for its idea (<code>play:&lt;card&gt;</code> or <code>play:wild:&lt;dataset&gt;</code>). If a roll goes to the Lab and the gate,
+the deflated Sharpe counts all the dice you threw on that idea. A good roll is a <strong>lead</strong>: before you submit,
+ask what the economic story is - then it can become a proper card.</p></details>
+{% endif %}
+{% endblock %}
