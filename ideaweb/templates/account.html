@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Account{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Account</h1></div>
+{% include "_job.html" %}
+<p class="lead-in">Your <strong>submitted</strong> alphas as BRAIN records them: the real lifetime count (it feeds the
+SuperAlpha countdown), operators used and unused per quarter by BRAIN's categories, and the fields you lean on most.
+Download again whenever you have submitted on the BRAIN website.</p>
+
+{% if sandbox %}
+<div class="flash"><p>Your account data comes from BRAIN: switch to <strong>Live</strong> on the <a href="/setup">Setup</a> page.</p></div>
+{% else %}
+<form method="post" action="/account/sync" class="inline"><fieldset {{ 'disabled' if job or not R }} class="inline">
+  <button class="btn primary">Download my submitted alphas, operators + simulation options from BRAIN</button></fieldset>
+  <p class="hint">{{ 'Last download: ' ~ last ~ ' UTC' if last else 'Not downloaded yet.' }}</p></form>
+{% if not R %}<div class="flash warn"><div class="prose">{{ problem | md | safe }}</div></div>{% endif %}
+{% endif %}
+{% if msg_acct %}<div class="flash {{ 'ok' if msg_acct[0] == 'ok' else 'err' }}"><p>{{ msg_acct[1] }}</p></div>{% endif %}
+
+<form method="get" action="/account" class="inline">
+  <label>Quarter <span class="hint">BRAIN's calendar, New York time</span>
+    <select name="q">{% for k in quarters %}<option {{ 'selected' if k == qkey }}>{{ k }}</option>{% endfor %}</select></label>
+  <button class="btn small">Show</button>
+</form>
+
+<h2>Counts</h2>
+<p>Lifetime: <strong>{{ c.lifetime_regular }}</strong> regular and <strong>{{ c.lifetime_super }}</strong> super alphas
+submitted. {{ y }} Q{{ qq }}: <strong>{{ c.quarter_regular }}</strong> regular, <strong>{{ c.quarter_super }}</strong> super.</p>
+
+<h2>Genius tie-breakers, {{ y }} Q{{ qq }}</h2>
+<p>Per alpha: <strong>{{ tb['operators per alpha'] }}</strong> operators, <strong>{{ tb['fields per alpha'] }}</strong>
+fields (lower is better). Distinct this quarter: <strong>{{ tb['distinct operators'] }}</strong> operators,
+<strong>{{ tb['distinct fields'] }}</strong> fields (higher is better). Simple alphas built from many different fields win
+both. The simulation streak counts too: simulate something every day (one free missed day per quarter).</p>
+
+<h2>Osmosis check</h2>
+<p>A valid allocation needs at least 3 region x delay scopes, each with exactly 100,000 points over at least 10 alphas.
+Combined Osmosis Performance needs 6 valid weeks in the quarter: the last Sunday to lock one is <strong>{{ lock }}</strong>
+(earlier is safer - BRAIN refreshes the number only every 4-6 weeks). Points lock Sunday 23:59 New York time = Monday
+06:59/07:59 Nairobi.</p>
+{% if osm_notes %}<div class="flash"><div class="prose">{{ osm_notes | join('\n\n') | md | safe }}</div></div>{% endif %}
+{{ osm | safe }}
+<p class="hint">Prefer alphas with turnover below 20% for Osmosis, and drop ones whose Sharpe falls ~60% or more with
+MaxTrade ON unless they are unique (BRAIN's Osmosis tips).</p>
+
+<h2 id="rerun">Re-run a submitted alpha with a risk set or at delay 0</h2>
+<p>BRAIN suggests re-simulating good alphas with risk neutralization (SLOW for low turnover, FAST / SLOW_AND_FAST for
+high turnover, REVERSION_AND_MOMENTUM for ratios over price) and re-running D1 alphas at D0. Some come out better and
+less correlated - candidate new signals. Results land in the <a href="/lab">Lab</a>, where the gate checks
+self-correlation with the original before you can submit.</p>
+{% if rerun_rows %}
+<ol class="results">
+  {% for r in rerun_rows[:40] %}<li class="{{ 'on' if r.alpha_id == pick }}"><a href="/account?alpha={{ r.alpha_id }}&q={{ qkey }}#rerun">
+    <span class="rid">{{ r.alpha_id }}</span><span>{{ r.region }} D{{ r.delay }} {{ r.neutralization }}</span>
+    <span class="nums">Sharpe {{ r.sharpe }} · fitness {{ r.fitness }} · turnover {{ r.turnover }}</span></a></li>{% endfor %}
+</ol>
+{% if variants %}
+<form method="post" action="/account/rerun" class="stack"><fieldset {{ 'disabled' if job }} class="stack">
+  <input type="hidden" name="alpha" value="{{ pick }}">
+  <p><strong>Variants of <code>{{ pick }}</code></strong> - each costs one simulation and one try:</p>
+  {% for i, label in variants %}<label class="chk"><input type="checkbox" name="v" value="{{ i }}"> {{ label }}</label>{% endfor %}
+  <button class="btn primary">Simulate the chosen variants</button></fieldset></form>
+{% elif pick %}<p class="empty">{{ 'Log in to see the variants.' if not R else 'No variants for this alpha.' }}</p>{% endif %}
+{% else %}<p class="empty">No submitted alphas known yet{{ '' if sandbox else ': download them above' }}.</p>{% endif %}
+
+<h2>Operators by category</h2>
+{{ bycat | safe }}
+{% for c in cats %}
+<details class="fold"><summary>{{ c.title }}</summary>
+  {% if c.used %}{{ c.used | safe }}{% else %}<p class="empty">None used this quarter.</p>{% endif %}
+  <p><strong>Not used yet:</strong> {% if c.unused %}{% for o in c.unused %}<code>{{ o }}</code>{{ ', ' if not loop.last }}{% endfor %}{% else %}all used{% endif %}</p>
+</details>
+{% endfor %}
+<p class="hint">Use an unused operator only when it fits the idea's mechanism; operators added just to raise coverage make weaker alphas.</p>
+
+<h2>Fields your submitted alphas use most</h2>
+<p>New ideas built on these will correlate with your own alphas.</p>
+{{ fields | safe }}
+
+<h2>Submitted alphas</h2>
+{{ subs | safe }}
+<details class="fold"><summary>How operators are counted</summary>{{ howcount | safe }}</details>
+{% endblock %}

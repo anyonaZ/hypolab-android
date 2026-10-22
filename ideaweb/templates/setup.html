@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Setup{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Setup</h1></div>
+{% include "_job.html" %}
+
+<h2>Where you stand</h2>
+<table class="grid tight"><tbody>{% for k, v in status %}<tr><th>{{ k }}</th><td class="wrap">{{ v }}</td></tr>{% endfor %}</tbody></table>
+
+<h2>Sandbox or live</h2>
+<p>Every page follows this switch.</p>
+<form method="post" action="/setup/mode" class="stack">
+  <fieldset class="checks-row"><legend>Mode</legend>
+    <label class="chk"><input type="radio" name="mode" value="sandbox" {{ 'checked' if sandbox }}> Sandbox - offline practice market</label>
+    <label class="chk"><input type="radio" name="mode" value="live" {{ 'checked' if not sandbox }}> Live - my BRAIN account</label>
+  </fieldset>
+  <label>Live region <select name="region">{% for r in regions %}<option {{ 'selected' if r == live_region }}>{{ r }}</option>{% endfor %}</select></label>
+  <button class="btn">Apply</button>
+</form>
+
+<h2 id="login">Log in to BRAIN</h2>
+<p>Your password goes only to BRAIN{% if can_save %} and, if you tick the box, to a file only you can read{% endif %}. If
+BRAIN asks for a face scan, a link appears here: it opens in your browser; come back and press the button.</p>
+{% if login.status in ('biometric', 'waiting') %}
+<div class="flash warn"><div>
+  <p>{% if login.status == 'waiting' %}<strong>BRAIN has not registered the scan yet.</strong> Wait until the page says it is done.{% else %}<strong>Face scan required.</strong>{% endif %}
+  <a href="{{ login.url }}" target="_blank" rel="noopener">Open BRAIN's face-scan page</a>, complete the scan, then press:</p>
+  <form method="post" action="/setup/scan-done"><button class="btn primary">I finished the face scan</button></form>
+</div></div>
+{% elif login.status == 'ok' %}
+<div class="flash ok"><p><strong>Logged in.</strong> Session valid for about {{ login.hours_left or '?' }} h{{ '; credentials saved.' if login.saved else '; credentials not saved.' }}{% if sandbox %} Switch to <strong>Live</strong> above to use your account.{% endif %}</p></div>
+{% elif login.status == 'error' %}
+<div class="flash err"><p><strong>Login failed:</strong> {{ login.detail }}. Nothing was saved.</p></div>
+{% elif login.status == 'logged_out' %}
+<div class="flash"><p>Logged out; saved credentials and session deleted.</p></div>
+{% endif %}
+<form method="post" action="/setup/login" class="stack" autocomplete="on">
+  <label>BRAIN email <input type="email" name="email" autocomplete="username" autocapitalize="off" spellcheck="false"></label>
+  <label>BRAIN password <input type="password" name="password" autocomplete="current-password"></label>
+  {% if can_save %}<label class="chk"><input type="checkbox" name="save" value="1" checked> Remember on this laptop (~/.hypolab/credentials.json, readable only by you)</label>
+  {% else %}<p class="hint">Remembering your password on the tablet waits for phase D (encrypted with the Android Keystore). Until then only BRAIN's session is kept, so you log in again when it expires.</p>{% endif %}
+  <button class="btn primary">Log in</button>
+</form>
+<details class="fold"><summary>Log out</summary>
+  <form method="post" action="/setup/logout"><button class="btn danger">Log out and forget my credentials</button></form></details>
+
+<details class="fold"><summary>Operators you may use (Gold list)</summary>{{ gold | safe }}</details>
+<details class="fold"><summary>A sensible daily routine (about 2 hours)</summary><ol class="prose">
+  <li><strong>20 min - read.</strong> The daily alpha brief (17:55 Nairobi), one paper abstract from a card's references, or one BRAIN Learn page.</li>
+  <li><strong>10 min - plan.</strong> <a href="/week">Week</a> (today's submissions, the plan) and <a href="/pyramids">Pyramids</a> (which cells this week).</li>
+  <li><strong>15 min - ideas.</strong> <a href="/leads">Leads</a>: act on one lead or one outside source; import the Writer's card on <a href="/drafts">Drafts</a>, check it, copy it for the Critic, approve it.</li>
+  <li><strong>50 min - research.</strong> <a href="/cards">Cards</a> › Send to the Lab 2-3 cards for this week's cells › <a href="/lab">Lab</a>: rung 1, read the diagnosis, climb at most a few rungs. Respect the stop signs.</li>
+  <li><strong>20 min - validate.</strong> Lab: production correlation (free), robustness and the gate on anything that passed. Submit only what clears the gate (at most 4 a day). After 100 lifetime alphas: one <a href="/superalpha">SuperAlpha</a> a day at most, from a pool of 10+.</li>
+  <li><strong>5 min - write.</strong> One lesson per idea in the <a href="/journal">Journal</a>. Fridays: the DIGEST / PLAN review on the Week page.</li>
+</ol></details>
+{% endblock %}

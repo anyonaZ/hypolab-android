@@ -755,8 +755,9 @@ routes = [
 from ideaweb import lab as _lab  # noqa: E402  (1.13.0: Lab, Play, Quant basics)
 
 from ideaweb import records as _records  # noqa: E402  (1.14.0: Journal, Pyramids, SuperAlpha)
+from ideaweb import account as _account  # noqa: E402  (1.15.0: Data, Account, Setup)
 
-routes[-1:-1] = _lab.routes(page, go) + _records.routes(page, go)
+routes[-1:-1] = _lab.routes(page, go) + _records.routes(page, go) + _account.routes(page, go)
 
 class LocalOriginOnly:
     """1.8.1: refuse POSTs that come from another web site. The app listens on 127.0.0.1 only, but any page open in

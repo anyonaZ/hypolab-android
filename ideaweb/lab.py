@@ -63,6 +63,7 @@ class Lab:
         self.problem = ""
         self.problem_at = 0.0
         self._serial = 0
+        self.login_msg = None          # Setup page: survives the Researcher being reopened after a login
         self.reset()
 
     def reset(self):
@@ -87,6 +88,11 @@ class Lab:
         self.super_focus: Optional[int] = None
         self.super_gate = None
         self.super_msg = ""
+        # 1.15.0 (phase C3): Data page's dataset explore/scan, Account download message
+        self.scan_form = None
+        self.explore = None
+        self.scan = None
+        self.acct_msg = None
 
     # ------------------------------------------------------------------ the Researcher
     def researcher(self):

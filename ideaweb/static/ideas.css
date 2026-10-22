@@ -350,3 +350,7 @@ ul.links { padding-left: 1.1rem; }
 .sacheck { margin: 0.6rem 0 1rem; }
 .sacheck .flash { display: block; }
 @media (max-width: 760px) { .twocol { grid-template-columns: 1fr; gap: 0; } }
+/* 1.15.0: radios were stretched to full width by the generic input rule */
+input[type=radio] { width: auto; min-height: 0; accent-color: var(--green); }
+@media (pointer: coarse) { input[type=radio] { width: 1.3rem; height: 1.3rem; } }
+.stack .checks-row label.chk { width: auto; }

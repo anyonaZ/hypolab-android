@@ -1,11 +1,15 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22: **HYPOLAB 1.14.0 = 1.13.0 + Android phase C2: Journal, Pyramids and SuperAlpha as web
-pages** (`ideaweb/records.py`; templates `journal.html`, `pyramids.html`, `superalpha.html`), shared by the laptop
-and the tablet, plus a threading fix (the field catalog's SQLite connection now works from the web app's job
-threads). 1.13.0 (C1) brought the Lab, Play and Quant basics. The marimo cockpit is still needed on the laptop only
-for Account, Data and Setup (phase C3). **367 tests pass.** Code: private repo `anyonaZ/hypolab-android`; GitHub
-Actions builds the signed APK. See "Android track" below.
+State on 2026-10-22: **HYPOLAB 1.15.0 = 1.14.0 + Android phase C3: Data (with the dataset explore/scan), Account
+and Setup as web pages** (`ideaweb/account.py`; templates `data.html`, `account.html`, `setup.html`). **The web app now
+covers everything the marimo apps did** (cockpit tabs, dataset scan, quant basics) on the laptop and the tablet;
+marimo still runs on the laptop and stays until Zacc decides to drop it (ask first). C1 (1.13.0) brought Lab, Play,
+Quant basics; C2 (1.14.0) Journal, Pyramids, SuperAlpha. **377 tests pass.** Code: private repo
+`anyonaZ/hypolab-android`; GitHub Actions builds the signed APK. Next: phase D (tablet login with the Android
+Keystore, the face scan in a Custom Tab, live BRAIN on the tablet). See "Android track" below.
+
+Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
+no scipy.
 
 Before that: 1.12.x (22 Oct) Android phase B, the Ideas app on the tablet + the app icon; 1.11.0 phase A (spike) and
 no scipy.
@@ -322,6 +326,28 @@ ended. The device had only ~0.9 GB "available" before the run (Android frees oth
 Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
+
+## Android track - phase C3 (1.15.0, 22 Oct)
+- `/data`: catalog contexts (`?ctx=region|universe|delay`), datasets by value score (tap one: `?ds=` shows the
+  concept map), fields by economic concept (+ category filter), free-text search, the Pyramids guide's datasets.
+  Live: "Download its field list" (a job; needs the universes saved by the Account download first). "Learn a dataset"
+  = the old `apps/dataset_scan.py`: Explore (free, `R.explore`, kept in `LAB.explore`; `?lens=` reads a lens card) and
+  Scan (`R.scan`, a job; one simulation per field; noise bar; kept in `LAB.scan`). A live scan of 10-30 minutes needs
+  the app open until phase E's foreground service.
+- `/account`: download (a job, live only: `acct.sync_account`, then the lifetime goal from BRAIN's count, the Lab's
+  card cache and Pyramid counts cleared); quarter picker; counts; tie-breakers; Osmosis check; re-run a submitted
+  alpha (`?alpha=` lists `R.rerun_variants`; ticked variants run as a job and land in the Lab); operators by
+  category (used / not used), fields used most, submitted alphas, how operators are counted.
+- `/setup`: where you stand; sandbox/live switch (`connect.go_live/go_sandbox`; the web Researcher is reopened);
+  BRAIN login (`connect.begin_login` / `finish_login` with the face-scan link, which opens in the browser on the
+  tablet) and log out. **On Android the password is never saved** (the "remember" box is hidden and `save=False` is
+  forced) until phase D stores it with the Android Keystore; BRAIN's session file is kept as on the laptop.
+  The login message (`LAB.login_msg`) survives the Researcher being reopened.
+- CSS: radios were stretched to full width by the generic `input` rule (the cause of the squashed dice labels on
+  Play); fixed for every page.
+- Tests: `tests/test_android_c3.py` (catalog browse, explore is free / scan is a job that simulates, download refused
+  in sandbox; Account page + sync refused in sandbox; Setup page, mode switch reopens the Researcher, login + face
+  scan + logout with a stand-in BRAIN, the tablet never saves the password, empty login refused; nav).
 
 ## Android track - phase C2 (1.14.0, 22 Oct)
 - `/journal`: the Researcher's journal (sandbox = in-memory practice journal, labelled so; live without a session =

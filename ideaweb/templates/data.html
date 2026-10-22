@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Data{% endblock %}
+{% block main %}
+<div class="page-head"><h1>Data</h1></div>
+{% include "_job.html" %}
+<p class="lead-in">Every field is classified by <strong>nature</strong> (balance-sheet stock, income flow, estimate, count,
+vendor score, date, code ...) and matched to <strong>economic concepts</strong>, with <strong>coverage</strong> and
+<strong>crowding</strong> (how many alphas already use it). High coverage and moderate crowding is the sweet spot;
+thousands of alphas on a dataset means yours will correlate with the pool.</p>
+
+{% if not sandbox %}
+<details class="fold"><summary>Download another region from BRAIN</summary>
+  {% if R %}
+  <form method="post" action="/data/download" class="inline"><fieldset {{ 'disabled' if job }} class="inline">
+    <label>Region to download <select name="region">{% for r in regions %}<option {{ 'selected' if r == live_region }}>{{ r }}</option>{% endfor %}</select></label>
+    <button class="btn">Download its field list (metadata only; a few minutes)</button></fieldset></form>
+  {% else %}<p class="empty">Log in first (Setup page).</p>{% endif %}
+</details>
+{% endif %}
+
+{% if not opts %}
+<div class="flash warn"><p>No catalog yet. {{ 'Download a region above.' if not sandbox else 'Open the Lab once to build the practice catalog.' }}</p></div>
+{% else %}
+<form method="get" action="/data" class="inline">
+  <label class="grow">Region in your catalog <select name="ctx">{% for k, label in opts %}<option value="{{ k }}" {{ 'selected' if k == key }}>{{ label }}</option>{% endfor %}</select></label>
+  <button class="btn">Show</button>
+</form>
+
+<h2>Datasets in this region</h2>
+<p class="hint">Most under-used first (BRAIN's value score). Tap a dataset to see what each field measures.</p>
+<div class="hl-mdtable"><table>
+  <thead><tr>{% for c in ds_cols %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for r in datasets %}<tr class="{{ 'on' if r.dataset == ds }}">{% for c in ds_cols %}<td>{% if c == 'dataset' %}<a href="/data?ctx={{ key }}&ds={{ r.dataset }}#fields"><code>{{ r.dataset }}</code></a>{% else %}{{ r[c] if r[c] is not none else '' }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+
+{% if ds %}
+<h3 id="fields">What each field of <code>{{ ds }}</code> measures</h3>
+{{ concept_map | safe }}
+{% endif %}
+
+<h2>Find fields by economic concept</h2>
+<form method="get" action="/data#concept" class="filters" id="concept">
+  <input type="hidden" name="ctx" value="{{ key }}">
+  <label>Economic concept <select name="concept">{% for c in concepts %}<option {{ 'selected' if c == concept }}>{{ c }}</option>{% endfor %}</select></label>
+  <details class="catpick"><summary>Only these categories{% if cats %} ({{ cats|length }}){% endif %}</summary><div>
+    {% for k, n in cat_names.items() %}<label class="chk"><input type="checkbox" name="cat" value="{{ k }}" {{ 'checked' if k in cats }}> {{ n }}</label>{% endfor %}
+  </div></details>
+  <button class="btn">Find</button>
+</form>
+{{ found | safe }}
+
+<form method="get" action="/data#search" class="inline" id="search">
+  <input type="hidden" name="ctx" value="{{ key }}">
+  <label class="grow">Free-text search <input name="q" value="{{ q }}" placeholder="e.g. short interest"></label>
+  <button class="btn">Search</button>
+</form>
+{% if search %}{{ search | safe }}{% endif %}
+
+<details class="fold"><summary>Datasets your Pyramids guide recommends - are they here?</summary>{{ guide | safe }}</details>
+{% endif %}
+
+<h2 id="learn">Learn a dataset: explore, then scan</h2>
+<ol class="prose">
+  <li><strong>Explore</strong> (free): each usable field gets only the <em>lenses</em> that make sense for its nature - a
+  cash-flow amount becomes a yield, an estimate becomes a revision, a count a relative change.</li>
+  <li><strong>Scan</strong> (one simulation per field, all journaled): every field probed once. The <strong>noise
+  bar</strong> is the |Sharpe| the luckiest pure-noise field would reach; only fields above it are candidates.</li>
+</ol>
+<p>A scan finds <em>where to look</em>, not alphas. If you later build an alpha from a scanned field, the gate counts
+every field you scanned as a try: choosing the best of 40 <em>is</em> a 40-way selection.</p>
+{% if not R %}
+<div class="flash warn"><div class="prose">{{ problem | md | safe }}</div></div>
+{% elif not learn.ids %}
+<div class="flash warn"><p>No field list for {{ learn.region }} yet: download it above.</p></div>
+{% else %}
+<form method="post" action="/data/learn" class="saform"><fieldset {{ 'disabled' if job }}>
+  <div class="row5">
+    <label>Dataset in {{ learn.region }} {{ learn.universe }} <select name="ds">{% for d in learn.ids %}<option {{ 'selected' if d == learn.ds }}>{{ d }}</option>{% endfor %}</select></label>
+    <label>Fields to explore <input type="number" name="explore_n" min="1" max="30" value="{{ learn.explore_n }}"></label>
+    <label>Fields to scan <input type="number" name="scan_n" min="2" max="{{ learn.scan_max }}" value="{{ learn.scan_n }}"></label>
+    <label>Minimum coverage <input type="number" name="min_cov" min="0.1" max="0.9" step="0.05" value="{{ learn.min_cov }}"></label>
+  </div>
+  <div class="actions-row">
+    <button class="btn" name="go" value="explore">1. Explore (free)</button>
+    <button class="btn danger" name="go" value="scan">2. Scan (one simulation per field)</button>
+  </div>
+  <p class="hint">Fields already scanned are served from the journal, not simulated again.{% if not sandbox %} {{ learn.left }} simulations left under today's runaway guard. A live scan can take 10-30 minutes; keep HYPOLAB open (background running comes in phase E).{% endif %}</p>
+</fieldset></form>
+
+{% if explore %}
+<h3 id="explore">Lens cards for <code>{{ explore_ds }}</code> <span class="hint">(no simulations)</span></h3>
+<ol class="results">
+  {% for c in explore %}<li class="{{ 'on' if c.id == lens_id }}"><a href="/data?lens={{ c.id }}#explore">
+    <span class="rid">{{ c.id }}</span><span>{{ c.title }}</span><span class="nums">{{ c.fields }} · {{ c.rungs }} rungs</span></a></li>{% endfor %}
+</ol>
+{% if lens %}<div class="mdout">{{ lens | md | safe }}</div>{% else %}<p class="empty">Tap a lens card to read it.</p>{% endif %}
+{% endif %}
+
+{% if scan_empty %}<div class="flash warn"><p>No usable numeric fields in this dataset at this coverage.</p></div>{% endif %}
+{% if scan %}
+<h3>Scan of <code>{{ scan.ds }}</code></h3>
+<div class="flash {{ 'ok' if scan.above else '' }}"><p><strong>Noise bar for {{ scan.n }} probes: |Sharpe| &gt; {{ scan.bar }}.</strong>
+  {{ scan.above }} field(s) clear it. A negative Sharpe means the field works with the opposite sign. Below the bar is
+  not proof of nothing: a field with a clear mechanism may still deserve a card.</p></div>
+{{ scan.table | safe }}
+<p><strong>Next:</strong> for each candidate, write one sentence on <em>why</em> it should predict returns, then turn it
+into a card (<a href="/drafts/new">Drafts › New card</a>).</p>
+{% endif %}
+{% endif %}
+{% endblock %}

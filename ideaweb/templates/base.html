@@ -30,9 +30,13 @@
   <a href="/journal" class="{{ 'on' if here.startswith('/journal') }}">Journal</a>
   <a href="/pyramids" class="{{ 'on' if here.startswith('/pyramids') }}">Pyramids</a>
   <a href="/superalpha" class="{{ 'on' if here.startswith('/superalpha') }}">SuperAlpha</a>
+  <p class="rail-sep">Account</p>
+  <a href="/data" class="{{ 'on' if here.startswith('/data') }}">Data</a>
+  <a href="/account" class="{{ 'on' if here.startswith('/account') }}">Account</a>
+  <a href="/setup" class="{{ 'on' if here.startswith('/setup') }}">Setup</a>
   <div class="rail-foot">
     <p class="mode {{ 'sbx' if sandbox else 'live' }}">{{ 'Sandbox' if sandbox else 'Live' }}</p>
-    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Marimo cockpit (other tabs)</a>{% endif %}
+    {% if cockpit_url %}<a class="out" href="{{ cockpit_url }}" target="_blank" rel="noopener">Marimo cockpit (optional now)</a>{% endif %}
     <p class="ver">v{{ version }}</p>
   </div>
 </nav>
