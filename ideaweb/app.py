@@ -36,6 +36,9 @@ from hypolab.ideas import generate_ideas
 from ideaengine import drafts as D
 from ideaengine import handoff, learn, planner, sources
 from ideaweb.jobs import JOBS
+from hypolab import brain as _brain
+
+_brain.NO_PROMPT = True         # 1.17.0: a page or a job never waits on input(); an ended session says "log in again"
 from ideaweb.state import state
 
 HERE = Path(__file__).resolve().parent
@@ -92,6 +95,29 @@ def _leads_count(st) -> int:
     return _LEADS_COUNT["n"]
 
 
+def _session_ended() -> bool:
+    """1.17.0: live mode with a Researcher whose BRAIN session has run out (the pages say: log in again)."""
+    if config.sandbox_mode():
+        return False
+    try:
+        from ideaweb.lab import LAB
+        R = LAB.R
+        return R is not None and not getattr(R.brain, "is_mock", False) and R.brain.seconds_left() <= 0
+    except Exception:  # noqa: BLE001
+        return False
+
+
+async def stop_waiting(request: Request):
+    """1.17.0: the job banner's "Stop waiting" (live only)."""
+    f = await request.form()
+    back = f.get("back") or "/lab"
+    back = back if back.startswith("/") and not back.startswith("//") else "/lab"
+    if JOBS.stop_waiting():
+        return go(back, "Stopping the wait. BRAIN keeps what it accepted; Lab > Fetch them from BRAIN collects it "
+                        "later (no new simulation).", "warn")
+    return go(back, "No job is running.")
+
+
 def page(request: Request, name: str, **ctx):
     st = state()
     config.apply_themes()               # 1.8.1: a long-running app follows a theme's start and end dates
@@ -103,6 +129,7 @@ def page(request: Request, name: str, **ctx):
                nav={"drafts_waiting": counts.get("draft", 0) + counts.get("checked", 0),
                     "week": planner.iso_week(), "leads": n_leads, "sources": _new_sources(st),
                     "job": JOBS.busy() is not None},
+               session_ended=_session_ended(),
                platform=config.platform(),
                # 1.12.0: the tablet has no marimo cockpit (its pages arrive in Android phase C)
                cockpit_url=None if config.platform() == "android" else "http://127.0.0.1:2718",
@@ -746,6 +773,7 @@ routes = [
     Route("/drafts/verdict", draft_verdict, methods=["POST"]), Route("/pack", pack, methods=["POST"]),
     Route("/drafts/{did}/restore", draft_restore, methods=["POST"]), Route("/drafts/{did}", draft_open),
     Route("/api/check", api_check, methods=["POST"]),
+    Route("/jobs/stop", stop_waiting, methods=["POST"]),
     Mount("/static", StaticFiles(directory=str(HERE / "static")), name="static"),
 ]
 from ideaweb import lab as _lab  # noqa: E402  (1.13.0: Lab, Play, Quant basics)

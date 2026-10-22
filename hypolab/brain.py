@@ -36,6 +36,18 @@ import requests
 from . import config
 
 API = os.environ.get("BRAIN_API_URL", "https://api.worldquantbrain.com")
+
+# 1.17.0 (Android phase D). The web app sets NO_PROMPT: a page (or a background job) must never wait on input() -
+# with no terminal it would hang on the laptop or fail obscurely on the tablet. Instead an expired session or a face
+# scan needed in the middle of a job raises AuthError with a plain message pointing to the Setup page.
+NO_PROMPT = os.environ.get("HYPOLAB_NO_PROMPT", "") == "1"
+SESSION_ENDED = ("Your BRAIN session has ended. Log in again on the Setup page. Nothing was lost: a simulation "
+                 "BRAIN already accepted waits under Lab > Fetch them from BRAIN (no new simulation).")
+# Set by the web app's "Stop waiting" button: polling for a running simulation stops (never a POST, never a re-send).
+import threading as _threading  # noqa: E402
+CANCEL = _threading.Event()
+STOPPED_WAITING = ("You stopped waiting. BRAIN keeps simulating what it accepted; collect the result later with "
+                   "Lab > Fetch them from BRAIN (no new simulation).")
 PLATFORM = os.environ.get("BRAIN_URL", "https://platform.worldquantbrain.com")
 
 
@@ -179,6 +191,8 @@ class BrainClient:
         if p.exists():
             d = json.loads(p.read_text())
             return d["email"], d["password"]
+        if NO_PROMPT:
+            raise AuthError(SESSION_ENDED)
         print("No saved BRAIN credentials. (Tip: log in on the Setup page or with `python -m hypolab login` "
               "once, and you will not be asked again.)")
         email = self.input("BRAIN email: ").strip()
@@ -275,6 +289,8 @@ class BrainClient:
         res = self.begin_login()
         if res["status"] == "biometric":
             url = res["url"]
+            if NO_PROMPT:                   # a page cannot wait for "press ENTER": the Setup page does the scan
+                raise AuthError("BRAIN wants a face scan before it continues. " + SESSION_ENDED)
             print("\nBiometric check required. Open this link, complete the scan, then come back:\n" + url)
             for attempt in range(5):
                 self.input("Press ENTER after completing the scan... ")
@@ -346,13 +362,20 @@ class BrainClient:
         """GET until no Retry-After header (BRAIN's async pattern)."""
         start = time.time()
         while True:
+            if CANCEL.is_set():
+                raise BrainError(STOPPED_WAITING)
             r = self._req("GET", path)
             ra = r.headers.get("Retry-After")
             if not ra or float(ra) == 0:
                 return r
             if time.time() - start > max_wait:
                 raise BrainError(f"timed out waiting for {path}")
-            time.sleep(float(ra))
+            # sleep in short steps so "Stop waiting" answers within a second
+            end = time.time() + float(ra)
+            while time.time() < end:
+                if CANCEL.is_set():
+                    raise BrainError(STOPPED_WAITING)
+                time.sleep(min(0.5, max(0.0, end - time.time())))
 
     def _paged(self, path: str, params: dict, page: int = 50, max_items: int = 100000) -> List[dict]:
         out, offset, total = [], 0, None

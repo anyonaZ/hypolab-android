@@ -4,6 +4,10 @@
   <span class="spin" aria-hidden="true"></span>
   <p><strong>Working on: {{ job.title }}</strong> - {{ job.seconds() }} s so far. This page refreshes by itself; you
   can switch to other pages meanwhile. Buttons that spend simulations wait until it ends.</p>
+  {% if not sandbox and job.seconds() > 20 %}
+  <form method="post" action="/jobs/stop"><input type="hidden" name="back" value="{{ request.url.path }}">
+    <button class="btn small" title="Stops HYPOLAB waiting for BRAIN. Nothing is cancelled or sent again.">Stop waiting</button></form>
+  {% endif %}
 </div>
 {% elif job_done %}
 <div class="flash {{ job_done.kind }}" role="status"><p>{{ job_done.message }}</p></div>

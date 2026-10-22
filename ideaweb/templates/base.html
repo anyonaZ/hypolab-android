@@ -41,6 +41,10 @@
   </div>
 </nav>
 <main>
+  {% if session_ended %}
+  <div class="flash err" role="alert"><p><strong>Your BRAIN session has ended.</strong> Log in again on the
+    <a href="/setup#login">Setup</a> page. Anything BRAIN already accepted waits under Lab › Fetch them from BRAIN.</p></div>
+  {% endif %}
   {% if msg %}
   <div class="flash {{ kind }}" role="status">
     <p>{{ msg }}</p>

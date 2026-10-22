@@ -21,6 +21,8 @@ import android.widget.FrameLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
 import android.window.OnBackInvokedDispatcher
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -107,11 +109,24 @@ class MainActivity : Activity() {
         w.loadUrl(url)
     }
 
+    /** Outside links (BRAIN's face-scan page, papers, feeds) open in a Custom Tab: a browser tab inside HYPOLAB that
+     *  the back button closes. If no browser supports Custom Tabs, the normal browser app opens instead. */
     private fun openOutside(u: Uri) {
+        if (u.scheme != "https" && u.scheme != "http") return
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE))
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(this, "No app can open $u", Toast.LENGTH_LONG).show()
+            val dark = CustomTabColorSchemeParams.Builder().setToolbarColor(Color.rgb(5, 13, 10)).build()
+            CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .setColorScheme(CustomTabsIntent.COLOR_SCHEME_DARK)
+                .setDefaultColorSchemeParams(dark)
+                .build()
+                .launchUrl(this, u)
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE))
+            } catch (e2: ActivityNotFoundException) {
+                Toast.makeText(this, "No app can open $u", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

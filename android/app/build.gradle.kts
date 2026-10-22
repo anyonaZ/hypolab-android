@@ -29,8 +29,8 @@ android {
         applicationId = "ke.zacc.hypolab"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.16.0"
+        versionCode = 8
+        versionName = "1.17.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
@@ -53,6 +53,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+}
+
+dependencies {
+    // 1.17.0: BRAIN's face-scan page (and any outside link) opens in a Custom Tab inside HYPOLAB
+    implementation("androidx.browser:browser:1.8.0")
 }
 
 chaquopy {

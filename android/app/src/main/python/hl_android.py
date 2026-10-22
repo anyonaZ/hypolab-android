@@ -30,6 +30,7 @@ def _configure(files_dir: str, stocks: int) -> str:
     os.environ["HYPOLAB_PLATFORM"] = "android"
     os.environ.setdefault("HYPOLAB_SANDBOX_STOCKS", str(stocks))
     os.environ.setdefault("MPLBACKEND", "Agg")
+    os.environ["HYPOLAB_NO_PROMPT"] = "1"      # 1.17.0: never wait on input() on the tablet
     return home
 
 

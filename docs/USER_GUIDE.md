@@ -1,4 +1,4 @@
-# HYPOLAB user guide (1.16.0)
+# HYPOLAB user guide (1.17.0)
 
 HYPOLAB helps you find WorldQuant BRAIN alphas the way good researchers do: **an idea first, simulations second.**
 You start from a reason why some stocks should beat others, HYPOLAB turns that reason into an expression on *your*
@@ -45,7 +45,9 @@ touching your BRAIN account. Switch to **live** on the **Setup** page when you a
 ### Simulations run in the background
 Every button that spends simulations (or reads BRAIN) starts a **job**: the page shows *Working on ...*, refreshes
 itself every few seconds, and you can look at other pages meanwhile. One job at a time; a second press is refused,
-not queued; nothing starts or repeats unless you press a button; a failed job is reported, never retried.
+not queued; nothing starts or repeats unless you press a button; a failed job is reported in plain words, never
+retried. In live mode a long wait shows **Stop waiting**: HYPOLAB stops waiting for BRAIN (nothing is cancelled on
+BRAIN and nothing is sent again) and **Lab › Fetch them from BRAIN** collects the result later, without paying twice.
 
 ---
 
@@ -252,10 +254,12 @@ scan can take 10-30 minutes: keep HYPOLAB open (on the tablet, background runnin
 
 ### 6.3 Setup
 Where you stand (mode, region, credentials, session, versions), the **sandbox/live switch**, **log in** (if BRAIN asks
-for a face scan, a link appears: it opens in the browser; do the scan, come back and press *I finished the face
-scan*), log out, the Gold operator list, and a suggested 2-hour daily routine. **On the tablet your password is never
-saved**: you type it at every login (your choice, 22 Oct); only BRAIN's session (a few hours) is kept, in the app's
-private storage.
+for a face scan, a link appears: on the tablet it opens in a browser tab inside HYPOLAB - do the scan, press back,
+then press *I finished the face scan*), log out, the Gold operator list, and a suggested 2-hour daily routine.
+**On the tablet your password is never kept**: you type it at every login (your choice, 22 Oct). It is not saved, and
+HYPOLAB forgets it once BRAIN has accepted it; only BRAIN's session (a few hours) is kept, in the app's private
+storage. When the session ends, every page shows a red line *Your BRAIN session has ended* - log in again; a job that
+was running stops with the same message instead of waiting for a password nobody can type.
 
 ---
 

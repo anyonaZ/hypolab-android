@@ -36,6 +36,23 @@ class Job:
         return int((self.ended or time.time()) - self.started)
 
 
+def explain(title: str, e: Exception) -> tuple:
+    """1.17.0: a failed job in plain words. (message, kind)."""
+    name = type(e).__name__
+    text = str(e)
+    if name == "AuthError":
+        return f"{title} stopped: {text}", "err"
+    if name == "UncertainOutcome":
+        return (f"{title}: the connection broke after BRAIN received the request. {text} If it was a simulation, "
+                "Lab > Fetch them from BRAIN collects it (no new simulation).", "err")
+    if name == "BrainError" and "stopped waiting" in text.lower():
+        return text, "warn"
+    if name in ("ConnectionError", "ConnectTimeout", "ReadTimeout", "Timeout") or "Max retries exceeded" in text:
+        return (f"{title} failed: no connection to BRAIN ({name}). Nothing was sent again. Check the Wi-Fi; if a "
+                "simulation was already accepted, Lab > Fetch them from BRAIN collects it.", "err")
+    return f"{title} failed: {name}: {text}", "err"
+
+
 class Jobs:
     def __init__(self):
         self._lock = threading.Lock()
@@ -52,6 +69,8 @@ class Jobs:
                 return False
             job = Job(title=title, page=page)
             self.current = job
+            from hypolab import brain
+            brain.CANCEL.clear()            # a new job starts with "Stop waiting" released
 
         def run():
             try:
@@ -61,13 +80,21 @@ class Jobs:
                 else:
                     job.message = out or f"Done: {title}."
             except Exception as e:  # noqa: BLE001  - reported on the page, never retried
-                job.message = f"{title} failed: {type(e).__name__}: {e}"
-                job.kind = "err"
+                job.message, job.kind = explain(title, e)
                 job.trace = traceback.format_exc(limit=6)
             finally:
                 job.ended = time.time()
 
         threading.Thread(target=run, name=f"hypolab-job", daemon=True).start()
+        return True
+
+    def stop_waiting(self) -> bool:
+        """1.17.0: stop waiting for BRAIN (polling only). Nothing is cancelled on BRAIN and nothing is re-sent; what
+        BRAIN accepted stays pending in the journal and Lab > Fetch them from BRAIN collects it later."""
+        if not self.busy():
+            return False
+        from hypolab import brain
+        brain.CANCEL.set()
         return True
 
     def take_message(self, page: str) -> Optional[Job]:

@@ -91,7 +91,9 @@ def begin_login(email: str, password: str, save: bool = True) -> dict:
     brain = BrainClient(credentials=(email.strip(), password), verbose=False)
     res = brain.begin_login()                         # raises AuthError on a wrong password; nothing saved
     if res["status"] == "biometric":
-        _PENDING = {"client": brain, "url": res["url"], "email": email.strip(), "password": password, "save": save}
+        _PENDING = {"client": brain, "url": res["url"], "email": email.strip(), "save": save,
+                    # 1.17.0: the tablet does not keep the password while the face scan is pending either
+                    "password": None if config.platform() == "android" else password}
         return {"status": "biometric", "url": res["url"]}
     return _accept(brain, email.strip(), password, save)
 
@@ -134,6 +136,11 @@ def finish_login() -> dict:
 def _accept(brain: BrainClient, email: str, password: str, save: bool) -> dict:
     global _CLIENT
     _CLIENT = brain
+    if config.platform() == "android":
+        # 1.17.0 (Zacc, 22 Oct): on the tablet the password is typed at every login - never saved, and not kept in
+        # memory once BRAIN has accepted it. Only BRAIN's session (a few hours) remains; when it ends, log in again.
+        save = False
+        brain._given_credentials = None
     if save:
         _write_private(_cred_path(), {"email": email, "password": password})
     return {"status": "ok", "hours_left": round(brain.seconds_left() / 3600, 1), "saved": bool(save)}

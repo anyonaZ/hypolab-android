@@ -1,15 +1,18 @@
 # HYPOLAB handoff - read this first in a new chat
 
-State on 2026-10-22 (afternoon): **HYPOLAB 1.16.0 = 1.15.0 + 1.10.4 (the `analyst_skill` concept, merged from the
-desktop line) + the web app as THE HYPOLAB system.** `python -m hypolab web` starts every page (`ideas` is the old
-name); README, USER_GUIDE (rewritten page by page), HOW_IT_WORKS (section 24), LEARNING_PATH, the setup script, the
-idea team's README and the HYPOLAB Project instructions now describe one web app; every engine message points to
-pages ("the Account page"), not cockpit tabs; "Send to the Lab" opens the Lab page. The marimo apps still run
-(`python -m hypolab cockpit`) for comparison. Knowledge pack regenerated: re-upload 02, 06, 07, 08, 09. **381 tests
-pass** (`python tests/run_all.py`). Code: private repo `anyonaZ/hypolab-android` (desktop code at the root, the Android
-app in `android/`); GitHub Actions builds the signed APK. Next: phase D (live BRAIN on the tablet; no Keystore - see
-decision 12). **There is now ONE line of code: make every change in this repo** (the 1.10.x desktop zips are merged
-up to 1.10.4).
+State on 2026-10-22 (late afternoon): **HYPOLAB 1.17.0 = 1.16.0 + Android phase D: live BRAIN made safe for web
+pages and the tablet.** Pages and jobs never wait on `input()` (`brain.NO_PROMPT`: an ended session or a face scan
+mid-job raise AuthError "log in again on the Setup page"); the tablet never keeps the password (not saved, dropped
+from memory after login and while a face scan is pending); **Stop waiting** (live) stops polling only, the simulation
+stays pending for Lab > Fetch them from BRAIN; failed jobs explain themselves (no connection / lost answer / session
+ended); a red line on every page when the live session has ended; BRAIN's face-scan page opens in a Custom Tab on the
+tablet. **391 tests pass.** **Not yet run against live BRAIN** - Zacc's first live test is the checklist in "Android
+track - phase D" below. One line of code: the private repo `anyonaZ/hypolab-android` (desktop code at the root, the
+Android app in `android/`); GitHub Actions builds the signed APK. Next: phase E (backup / hand-over between laptop
+and tablet, a foreground service for long jobs, the daily collectors).
+
+Before that: 1.16.0 (1.10.4 merged; the web app is THE system, `python -m hypolab web`), 1.15.0 (C3), 1.14.0 (C2),
+1.13.0 (C1), 1.12.x (B), 1.11.0 (A) - all 22 Oct.
 
 Before that: 1.15.0 (C3: Data, Account, Setup), 1.14.0 (C2: Journal, Pyramids, SuperAlpha), 1.13.0 (C1: Lab, Play,
 Basics), 1.12.x (B: the Ideas app on the tablet + the icon), 1.11.0 (A: spike; no scipy) - all 22 Oct.
@@ -336,6 +339,39 @@ ended. The device had only ~0.9 GB "available" before the run (Android frees oth
 Java heap limit (256/512 MB) does not apply to numpy, which allocates natively.
 Reading: everything works with Python 3.11 from Chaquopy's repository (matplotlib included); the only risk is the
 practice market's peak on 4 GB together with a WebView.
+
+## Android track - phase D (1.17.0, 22 Oct)
+- **The bug it fixes:** with no saved password (always the case on the tablet, decision 12), a 401 in the middle of a
+  job made `BrainClient.login()` fall back to `input()` - a hidden prompt that hangs the job on the laptop (it waits
+  on the terminal) and fails obscurely on the tablet. Now `brain.NO_PROMPT` (set by `ideaweb.app` on import and by
+  `HYPOLAB_NO_PROMPT=1` in `hl_android`) makes `_credentials()` and a mid-job face scan raise
+  `AuthError(brain.SESSION_ENDED)`. Terminals (`python -m hypolab login`) still prompt.
+- **Password on the tablet:** `connect._accept` forces `save=False` and sets `brain._given_credentials = None` when
+  `config.platform() == "android"`; `connect.begin_login` keeps no password in `_PENDING` there. When BRAIN's session
+  (about 4 h) ends, the next BRAIN call raises AuthError and every page shows a red "session has ended" line
+  (`app._session_ended()`).
+- **Stop waiting:** `brain.CANCEL` (threading.Event) is checked in `BrainClient._poll` every 0.5 s; `JOBS.stop_waiting()`
+  sets it (button in the job banner after 20 s, live only; `POST /jobs/stop`, same-site `back` only); `JOBS.start`
+  clears it. Only GET polling stops: no POST is cancelled or repeated, the journal's pending row stays, and
+  `R.recover_pending()` (Lab > Fetch them from BRAIN) collects it later.
+- **Plain failures:** `jobs.explain()` turns AuthError / UncertainOutcome / connection errors / "stopped waiting" into
+  sentences that say what happened and what to do; nothing is retried.
+- **Custom Tabs:** `androidx.browser:browser:1.8.0`; `MainActivity.openOutside` opens http(s) links in a dark Custom
+  Tab (fallback: the browser app). The back button returns to HYPOLAB.
+- Tests: `tests/test_android_d.py` (no input() anywhere in the web path, terminal still prompts, the tablet never
+  saves or keeps the password, the laptop unchanged, Stop waiting answers within a second and only GETs, the route
+  and its release, plain messages, the session banner).
+
+### Zacc's first live test on the tablet (spends ONE real simulation; do it, then report)
+1. Install 1.17.0 over the current app. Setup: switch to **Live** (region EUR, this week's plan), log in; if BRAIN
+   asks for the face scan, do it in the tab that opens, press back, then *I finished the face scan*.
+2. Account: **Download my submitted alphas ...** (no simulation). Check the lifetime count matches BRAIN.
+3. Data: download the EUR TOP2500 field list if it is not there (metadata, a few minutes; keep the app open).
+4. Cards: send ONE card to the Lab; Lab: **Simulate** rung 1 (one simulation). Then **Show its performance** and
+   **Read production correlation** (both free).
+5. Report: the verdict, how long the simulation took, and anything that looked wrong. Do NOT gate or submit yet.
+   (Optional: start a second simulation and press **Stop waiting**, then **Fetch them from BRAIN** - it must come back
+   without a new simulation.)
 
 ## 1.16.0: one system (22 Oct, afternoon)
 - Merged 1.10.4 from the desktop line: `hypolab/concepts.py` (`analyst_skill`, the forecaster-record `ratio` nature
